@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	layout="vertical" width="1024" backgroundColor="0xffffff" showStatusBar="false"
+	paddingBottom="0" paddingLeft="0" paddingTop="0" paddingRight="0"
+	creationComplete="init()" applicationComplete="fullScreen()">
+
+	<mx:VBox id="box" width="100%" height="100%" />
+
+	<mx:Script>
+		<![CDATA[
+		
+			import mx.events.ResizeEvent;
+			import mx.core.UIComponent;
+
+			import flash.events.MouseEvent;
+			
+			import com.electrotank.water.Water;
+
+			private var water:Water;
+			
+			public function init():void{
+				start();
+				this.addEventListener(MouseEvent.CLICK, mouseDownHandlerr);
+				this.addEventListener(ResizeEvent.RESIZE, onResize);
+			}
+
+			public function mouseDownHandlerr(ev:Event):void {
+				//water.injectWave(15, mouseX);
+				water.tweenFill(mouseY/768, 2);
+			}
+			
+			public function start():void {		
+				water = new Water( this.width, this.height );
+				addDisplayObject(water);
+				water.tweenFill(.1,3);
+			}
+			
+			public function fullScreen():void {
+				this.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+			}
+			
+			public function onResize(ev:ResizeEvent):void{
+				var newWidth:Number = this.width;
+				var newHeight:Number = this.height;
+				
+				water.setSize(newWidth, newHeight);
+				//water.fill = ( this.width  % 1000 ) / 1000;
+				water.fill = .9;
+			}
+			
+			public function addDisplayObject( child:DisplayObject ):void {
+				var uic:UIComponent = new UIComponent();
+				uic.addChild(child);
+				box.addChild(uic);	
+			}
+
+		]]>
+	</mx:Script>
+	
+</mx:WindowedApplication>
