@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	layout="vertical" width="1050" height="400" backgroundColor="#DDDDDD"
+	paddingTop="10" paddingBottom="10" paddingLeft="20" paddingRight="20"
+	status="FPS: {fps}"
+	creationComplete="init()">
+
+
+	<mx:Script>
+		<![CDATA[
+		
+			import edu.iu.vis.tracking.MotionTracking;
+			import edu.iu.vis.tracking.Region;
+			import edu.iu.vis.tracking.RegionAdjacencyGraph;
+			import edu.iu.vis.utils.NumberUtil;
+			
+			[Bindable]
+			private var w:Number = 320;
+			[Bindable]
+			private var h:Number = 240;
+			[Bindable]
+			private var fps:uint = 0;
+			
+			private var paused:Boolean = false;
+			
+			private var video:Video;
+			private var cam:Camera;
+			
+			private var camData:BitmapData;
+
+	   		private var tracker:MotionTracking;
+	   		private var keyer:MotionTracking;
+	   
+			private function init():void {
+				setupTracker();
+				camera();
+				setupScreen();
+				addEventListener(Event.ENTER_FRAME, onFrame);
+			}
+			
+			private function setupTracker():void {
+				tracker = new MotionTracking( 320, 240, 32, 1 );
+				motionBlurSlider.value = tracker.blur;
+				motionSensitivitySlider.value = tracker.sensitivity;
+				
+				keyer = new MotionTracking( 320, 240, 20, 15 );
+				keyBlurSlider.value = keyer.blur;
+				keySensitivitySlider.value = keyer.sensitivity;
+			}
+			
+			private function camera():void {
+				cam = Camera.getCamera();
+				w = cam.width * 2;
+				h = cam.height * 2;
+				
+				video = new Video(w, h);
+				video.attachCamera(cam);
+			}
+	
+			private function setupScreen():void {
+	
+				camData = new BitmapData(w, h);
+				var bmp2:Bitmap = new Bitmap();
+				bmp2.bitmapData = camData;
+				img01.source = bmp2;
+				
+				var bmp:Bitmap = new Bitmap();
+				bmp.bitmapData = tracker.filteredBitmapData;
+				img02.source = bmp;
+				
+				var bmp3:Bitmap = new Bitmap();
+				bmp3.bitmapData = keyer.filteredBitmapData;
+				img03.source = bmp3;
+			}
+	
+			private function onFrame( event:Event ):void {
+				if ( paused )
+					return;
+				trackingUpdate();
+				fps = cam.currentFPS;
+			}
+			
+			private function trackingUpdate():void {
+				camData.draw( video );
+				tracker.motionTrack( camData );
+				keyer.keyTrack( camData );
+				//calculateMotionWaves( tracker.track( camData ) );
+			}
+			
+			private function key():void {
+				keyer.key();
+			}
+			
+			private function motionBlurChange():void {
+				tracker.blur = motionBlurSlider.value;
+			}
+			
+			private function motionSensitivityChange():void {
+				tracker.sensitivity = motionSensitivitySlider.value;
+			}
+			
+			private function keyBlurChange():void {
+				keyer.blur = keyBlurSlider.value;
+			}
+			
+			private function keySensitivityChange():void {
+				keyer.sensitivity = keySensitivitySlider.value;
+			}
+			
+			private function togglePause():void {
+				paused = !paused;
+			}
+			
+			/*
+			private var pressure:Dictionary;
+			
+			private function calculateMotionWaves( rag:RegionAdjacencyGraph ):void {
+				
+				pressure = new Dictionary(true);
+				
+				for each( var r:Region in rag.regions ) {
+					if ( !r.bit ) {
+						
+						for ( var i:uint = r.bounds.x; i < r.bounds.x + r.bounds.width; i++ ) {
+							if ( !pressure[ i ] )
+								pressure[ i ] = 0;
+							pressure[ i ] += r.bounds.height;
+						}
+						
+						//trace( r.toString() );
+					}
+				}
+				trace( rag.toString() );
+				for ( var p:String in pressure ) {
+					var perc:Number = pressure[ p ];
+					perc /= 240;
+					perc = NumberUtil.CleanPercentage( perc );
+					pressure[ p ] = perc;
+				}
+				
+				//for each( var p:Number in pressure )
+					//trace( p );
+				
+			}
+
+			private function tracer():void {
+				for each( var p:Number in pressure )
+					trace( p );
+			}
+			*/
+		]]>
+	</mx:Script>
+
+	<mx:HBox width="100%" horizontalGap="20">
+	
+		<mx:VBox>
+		
+			<mx:Label text="Camera" fontSize="14" />
+		
+			<mx:Image id="img01" width="{w}" height="{h}" />
+			
+		</mx:VBox>
+	
+		<mx:VBox>
+			
+			<mx:Label text="Motion" fontSize="14" />
+			
+			<mx:Image id="img02" width="{w}" height="{h}" />
+			
+			<mx:HBox width="100%">
+				
+				<mx:FormItem label="Blur">
+					<mx:HSlider id="motionBlurSlider" width="100" minimum="0" maximum="100"
+						tickInterval="10" snapInterval="1" labels="['Min', 'Max']" change="motionBlurChange()" />
+				</mx:FormItem>
+		
+				<mx:FormItem label="Sensitivity">
+					<mx:HSlider id="motionSensitivitySlider" width="100" minimum="0" maximum="50"
+						tickInterval="5" snapInterval="1" labels="['Min', 'Max']" change="motionSensitivityChange()" />
+				</mx:FormItem>
+				
+			</mx:HBox>
+			
+		</mx:VBox>
+		
+		<mx:VBox>
+			
+			<mx:Label text="Key" fontSize="14" />
+			
+			<mx:Image id="img03" width="{w}" height="{h}" />
+			
+			<mx:HBox width="100%">
+
+				<mx:FormItem label="Blur">
+					<mx:HSlider id="keyBlurSlider" width="100" minimum="0" maximum="100"
+						tickInterval="10" snapInterval="1" labels="['Min', 'Max']" change="keyBlurChange()" />
+				</mx:FormItem>
+		
+				<mx:FormItem label="Sensitivity">
+					<mx:HSlider id="keySensitivitySlider" width="100" minimum="0" maximum="50"
+						tickInterval="5" snapInterval="1" labels="['Min', 'Max']" change="keySensitivityChange()" />
+				</mx:FormItem>
+				
+			</mx:HBox>
+			
+		</mx:VBox>
+		
+	</mx:HBox>
+	
+	<mx:HBox width="100%" horizontalGap="30">
+		
+		<mx:Button label="Toggle Pause" click="togglePause()" />
+		
+		<mx:Button label="Key" click="key()" />
+		
+	</mx:HBox>
+	
+</mx:WindowedApplication>
