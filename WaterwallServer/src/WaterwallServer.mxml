@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication
 	xmlns:mx="http://www.adobe.com/2006/mxml"
-	layout="vertical" width="1050" height="400" backgroundColor="#DDDDDD"
+	layout="vertical" width="1045" height="385" backgroundColor="#DDDDDD"
 	paddingTop="10" paddingBottom="10" paddingLeft="20" paddingRight="20"
 	status="FPS: {fps}"
 	creationComplete="init()">
@@ -9,6 +9,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import io.radical.waterwall.net.WWOutgoingConnection;
 		
 			import edu.iu.vis.tracking.MotionTracking;
 			import edu.iu.vis.tracking.Region;
@@ -21,7 +22,7 @@
 			private var h:Number = 240;
 			[Bindable]
 			private var fps:uint = 0;
-			
+			[Bindable]
 			private var paused:Boolean = false;
 			
 			private var video:Video;
@@ -31,28 +32,32 @@
 
 	   		private var tracker:MotionTracking;
 	   		private var keyer:MotionTracking;
+	   		
+	   		private var motionWaves:Dictionary;
 	   
+	   		private var outgoing:WWOutgoingConnection;
+	   		
 			private function init():void {
 				setupTracker();
 				camera();
 				setupScreen();
+				outgoing = new WWOutgoingConnection( "_WWConnection" );
 				addEventListener(Event.ENTER_FRAME, onFrame);
 			}
 			
 			private function setupTracker():void {
-				tracker = new MotionTracking( 320, 240, 32, 1 );
+				tracker = new MotionTracking( w, h, 32, 1 );
 				motionBlurSlider.value = tracker.blur;
 				motionSensitivitySlider.value = tracker.sensitivity;
 				
-				keyer = new MotionTracking( 320, 240, 20, 15 );
+				keyer = new MotionTracking( w, h, 20, 15 );
 				keyBlurSlider.value = keyer.blur;
 				keySensitivitySlider.value = keyer.sensitivity;
 			}
 			
 			private function camera():void {
 				cam = Camera.getCamera();
-				w = cam.width * 2;
-				h = cam.height * 2;
+				cam.setMode( cam.width, cam.height, 30 );
 				
 				video = new Video(w, h);
 				video.attachCamera(cam);
@@ -84,8 +89,9 @@
 			private function trackingUpdate():void {
 				camData.draw( video );
 				tracker.motionTrack( camData );
+				calculateMotionWaves( tracker.graph() );
 				keyer.keyTrack( camData );
-				//calculateMotionWaves( tracker.track( camData ) );
+				calculateFill( keyer.graph() );
 			}
 			
 			private function key():void {
@@ -112,43 +118,44 @@
 				paused = !paused;
 			}
 			
-			/*
-			private var pressure:Dictionary;
-			
 			private function calculateMotionWaves( rag:RegionAdjacencyGraph ):void {
 				
-				pressure = new Dictionary(true);
+				motionWaves = new Dictionary(true);
 				
 				for each( var r:Region in rag.regions ) {
 					if ( !r.bit ) {
 						
 						for ( var i:uint = r.bounds.x; i < r.bounds.x + r.bounds.width; i++ ) {
-							if ( !pressure[ i ] )
-								pressure[ i ] = 0;
-							pressure[ i ] += r.bounds.height;
+							if ( !motionWaves[ i ] )
+								motionWaves[ i ] = 0;
+							motionWaves[ i ] += r.bounds.height;
 						}
-						
-						//trace( r.toString() );
+
 					}
 				}
-				trace( rag.toString() );
-				for ( var p:String in pressure ) {
-					var perc:Number = pressure[ p ];
-					perc /= 240;
+				//trace( rag.toString() );
+				for ( var mw:String in motionWaves ) {
+					var perc:Number = motionWaves[ mw ];
+					perc /= h;
 					perc = NumberUtil.CleanPercentage( perc );
-					pressure[ p ] = perc;
+					motionWaves[ mw ] = perc;
 				}
 				
 				//for each( var p:Number in pressure )
 					//trace( p );
-				
+				tracer();
+			}
+			
+			private function calculateFill( rag:RegionAdjacencyGraph ):void {
+				var fill:Number = .5;
+				outgoing.sendFill( fill );
 			}
 
 			private function tracer():void {
-				for each( var p:Number in pressure )
-					trace( p );
+				for each( var mw:Number in motionWaves )
+					trace( mw );
 			}
-			*/
+			
 		]]>
 	</mx:Script>
 
@@ -208,11 +215,11 @@
 		
 	</mx:HBox>
 	
-	<mx:HBox width="100%" horizontalGap="30">
+	<mx:HBox width="100%" horizontalGap="10">
 		
-		<mx:Button label="Toggle Pause" click="togglePause()" />
+		<mx:Button label="{ paused ? 'Play' : 'Pause' }" width="80" click="togglePause()" />
 		
-		<mx:Button label="Key" click="key()" />
+		<mx:Button label="Key" click="key()" width="80" />
 		
 	</mx:HBox>
 	
