@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flexLibProperties version="1">
+<includeClasses>
+<classEntry path="com.electrotank.water.Water"/>
+<classEntry path="com.gskinner.motion.MultiTween"/>
+<classEntry path="io.radical.waterwall.net.WWIncomingConnection"/>
+<classEntry path="io.radical.waterwall.net.WWAbstractConnection"/>
+<classEntry path="com.gskinner.motion.GTween"/>
+<classEntry path="io.radical.waterwall.events.FillEvent"/>
+<classEntry path="io.radical.waterwall.net.WWOutgoingConnection"/>
+<classEntry path="com.gskinner.motion.GTweenTimeline"/>
+</includeClasses>
+<includeResources/>
+<namespaceManifests/>
+</flexLibProperties>
