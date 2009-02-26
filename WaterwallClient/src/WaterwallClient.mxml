@@ -5,11 +5,14 @@
 	paddingBottom="0" paddingLeft="0" paddingTop="0" paddingRight="0"
 	creationComplete="init()" applicationComplete="fullScreen()">
 
-	<mx:VBox id="box" width="100%" height="100%" />
 
 	<mx:Script>
 		<![CDATA[
 		
+			import io.radical.waterwall.net.WWIncomingConnection;
+			import io.radical.waterwall.events.FillEvent;
+			import io.radical.waterwall.events.WaveEvent;
+			
 			import mx.events.ResizeEvent;
 			import mx.core.UIComponent;
 
@@ -18,16 +21,15 @@
 			import com.electrotank.water.Water;
 
 			private var water:Water;
+			private var incoming:WWIncomingConnection;
 			
 			public function init():void{
 				start();
-				this.addEventListener(MouseEvent.CLICK, mouseDownHandlerr);
+				incoming = new WWIncomingConnection( "_WWConnection" );
+				incoming.addEventListener( FillEvent.FILL_UPDATE, onFillUpdate );
+				incoming.addEventListener( WaveEvent.WAVE_INJECTION, onWaveInjection );
+				this.addEventListener(MouseEvent.CLICK, onMouseDown);
 				this.addEventListener(ResizeEvent.RESIZE, onResize);
-			}
-
-			public function mouseDownHandlerr(ev:Event):void {
-				//water.injectWave(15, mouseX);
-				water.tweenFill(mouseY/768, 2);
 			}
 			
 			public function start():void {		
@@ -40,13 +42,26 @@
 				this.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
 			}
 			
+			private function onFillUpdate( e:FillEvent ):void {
+				water.tweenFill( e.data, 2 );
+			}
+			
+			private function onWaveInjection( e:WaveEvent ):void {
+				water.injectWave( e.strength, e.x );
+			}
+			
+			public function onMouseDown(ev:Event):void {
+				//water.injectWave(15, mouseX);
+				water.tweenFill(mouseY/768, 2);
+			}
+			
 			public function onResize(ev:ResizeEvent):void{
 				var newWidth:Number = this.width;
 				var newHeight:Number = this.height;
 				
 				water.setSize(newWidth, newHeight);
 				//water.fill = ( this.width  % 1000 ) / 1000;
-				water.fill = .9;
+				//water.fill = .9;
 			}
 			
 			public function addDisplayObject( child:DisplayObject ):void {
@@ -57,5 +72,8 @@
 
 		]]>
 	</mx:Script>
+	
+	
+	<mx:VBox id="box" width="100%" height="100%" />
 	
 </mx:WindowedApplication>

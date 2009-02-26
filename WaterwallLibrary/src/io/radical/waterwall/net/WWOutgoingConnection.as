@@ -10,5 +10,9 @@ package io.radical.waterwall.net {
 			connection.send( connectionName, "dispatchFill", fill );
 		}
 		
+		public function sendWave( strength:Number, x:Number ):void {
+			connection.send( connectionName, "dispatchWave", strength, x );
+		}
+		
 	}
 }

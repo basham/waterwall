@@ -9,6 +9,7 @@
 
 	<mx:Script>
 		<![CDATA[
+		
 			import io.radical.waterwall.net.WWOutgoingConnection;
 		
 			import edu.iu.vis.tracking.MotionTracking;
@@ -50,7 +51,7 @@
 				motionBlurSlider.value = tracker.blur;
 				motionSensitivitySlider.value = tracker.sensitivity;
 				
-				keyer = new MotionTracking( w, h, 20, 15 );
+				keyer = new MotionTracking( w, h, 20, 20 );
 				keyBlurSlider.value = keyer.blur;
 				keySensitivitySlider.value = keyer.sensitivity;
 			}
@@ -125,10 +126,10 @@
 				for each( var r:Region in rag.regions ) {
 					if ( !r.bit ) {
 						
-						for ( var i:uint = r.bounds.x; i < r.bounds.x + r.bounds.width; i++ ) {
+						for ( var i:uint = r.bounds.y; i < r.bounds.y + r.bounds.height; i++ ) {
 							if ( !motionWaves[ i ] )
 								motionWaves[ i ] = 0;
-							motionWaves[ i ] += r.bounds.height;
+							motionWaves[ i ] += r.bounds.width;
 						}
 
 					}
@@ -136,9 +137,11 @@
 				//trace( rag.toString() );
 				for ( var mw:String in motionWaves ) {
 					var perc:Number = motionWaves[ mw ];
-					perc /= h;
+					perc /= w;
 					perc = NumberUtil.CleanPercentage( perc );
 					motionWaves[ mw ] = perc;
+					
+					//outgoing.sendWave( (9*perc), (this.width * Number(mw))/h );
 				}
 				
 				//for each( var p:Number in pressure )
@@ -147,7 +150,15 @@
 			}
 			
 			private function calculateFill( rag:RegionAdjacencyGraph ):void {
-				var fill:Number = .5;
+				
+				var surfaceArea:Number = 0;
+				var totalSurfaceArea:Number = w * h;
+				
+				for each( var r:Region in rag.regions )
+					if ( !r.bit )
+						surfaceArea += r.bounds.width * r.bounds.height;
+						
+				var fill:Number = ( surfaceArea / totalSurfaceArea );
 				outgoing.sendFill( fill );
 			}
 
@@ -205,7 +216,7 @@
 				</mx:FormItem>
 		
 				<mx:FormItem label="Sensitivity">
-					<mx:HSlider id="keySensitivitySlider" width="100" minimum="0" maximum="50"
+					<mx:HSlider id="keySensitivitySlider" width="100" minimum="0" maximum="99"
 						tickInterval="5" snapInterval="1" labels="['Min', 'Max']" change="keySensitivityChange()" />
 				</mx:FormItem>
 				
