@@ -1,5 +1,5 @@
 ﻿package com.electrotank.water {
-	import com.electrotank.float.*;
+	//import com.electrotank.float.*;
 	import com.gskinner.motion.GTween;
 	
 	import edu.iu.vis.utils.NumberUtil;
@@ -90,26 +90,43 @@
 		 * @param	new height: should be a percentage (0.00 - 1.0)
 		 * @param	length of tween
 		 */
-		public function tweenFill( value:Number, length:Number ):void {
+		 
+		private var fillTween:GTween;
+		//private var frame:uint = 0;
+		
+		public function tweenFill( value:Number, maxDuration:Number = 3, minDuration:Number = 1 ):void {
 			
 			var tweenValue:Number = NumberUtil.CleanPercentage(value);
-			var initialFill:Number = this.fill;
-
-			GTween.timingMode = GTween.TIME;
-			var myTween:GTween = new GTween(this, length);
-			myTween.setProperty("fill", tweenValue);
-			myTween.ease = Quadratic.easeOut;
-			myTween.play();
 			
-		}
+			//this.fill = tweenValue;
+			//trace( '%', frame, this.fill );
+			//frame++;
+			//return;
+			
+			var initialFill:Number = this.fill;
+			var diff:Number = Math.abs( tweenValue - initialFill );
+			var duration:Number = diff * maxDuration + minDuration;
+			
+			if ( diff == 0 )
+				return;
+			
+			if ( !fillTween ) {
+				GTween.timingMode = GTween.TIME;
+				fillTween = new GTween(this, duration);
+				fillTween.ease = Quadratic.easeOut;
+			}
 
+			fillTween.setProperty("fill", tweenValue);
+			fillTween.duration = duration;
+		}
+/*
 		public function addFloatingItem(dob:DisplayObject):void {
 			var fi:IFloatable = new FloatingItem();
 			fi.setDisplayObject(dob);
 			fi.setYVelocity(0);
 			addIFloatable(fi);
 		}
-		
+	*/	
 		/* ===============================================================
 		 * PRIVATE FUNCTIONS: IT DOES STUFF
 		 * ===============================================================*/	
@@ -126,7 +143,7 @@
 			
 			propogateWaves();
 			renderWater();
-			moveFloatingItems();
+			//moveFloatingItems();
 		}		 
 		 
 		 /**
@@ -139,7 +156,7 @@
 		 */
 		private function addWave(A:Number, startx:Number, dir:Number):void {
 			//f(x) = A*sin(w*t)
-			var wave:Wave = new Wave();
+			var wave:Wave = Wave.GetInstance();
 			wave.setIndex(Math.floor(startx/spacing));
 			wave.setA(A);
 			wave.setDir(dir);
@@ -163,11 +180,15 @@
 				wave.setA(wave.getA() / Math.pow(Math.E, d*(t-wave.getStartTime())));
 				var index:Number = Math.floor((wave.getStartX()+wave.getDir()*(t-wave.getStartTime())*speed)/spacing);
 				if (index < 0 || index > numDots-1) {
-					waves.splice(j, 1);
+					var a:Wave = waves.splice(j, 1)[0] as Wave;
+					if ( a != null ) {
+						a.remove();
+					}
+
 				} else if (index != wave.getIndex() || (index == wave.getIndex() && wave.getDir() == 1 && wave.getFirstOne())) {
 					var w:Wave;
 					if (wave.getFirstOne() && wave.getDir() == 1) {
-						w = new Wave();
+						w = Wave.GetInstance();
 						w.setA(wave.getA());
 						w.setStartTime(t);
 						dot = getDots()[wave.getIndex()];
@@ -175,7 +196,7 @@
 					}
 					if (wave.getDir() == 1) {
 						for (i=wave.getIndex()+1;i<=index;++i) {
-							w = new Wave();
+							w = Wave.GetInstance();
 							w.setA(wave.getA());
 							w.setStartTime(t);
 							dot = getDots()[i];
@@ -183,7 +204,7 @@
 						}
 					} else {
 						for (i=wave.getIndex()-1;i>=index;--i) {
-							w = new Wave();
+							w = Wave.GetInstance();
 							w.setA(wave.getA());
 							w.setStartTime(t);
 							dot = getDots()[i];
@@ -204,14 +225,16 @@
 					wave.setA(wave.getA()*d);
 					y += wave.getA()*Math.sin(freq*(t-wave.getStartTime()));
 					if (wave.getA()<.5) {
-						dot.getWaves().splice(j, 1);
+						var b:Wave = dot.getWaves().splice(j, 1)[0] as Wave;
+						if ( b != null )
+							b.remove();
 					}
 				}
 				dot.y = y + ( (1-fill) * bounds.height );
 			}
 		}
 		
-
+/*
 		private function moveFloatingItems():void {
 			var g:Number = .25;
 			for (var j:int=0;j<getFloatingItems().length;++j) {
@@ -240,7 +263,7 @@
 				}
 			}
 		}
-		
+		*/
 		private function renderWater():void {
 			//trace(this.width);
 			//this.width = 1107;
@@ -292,10 +315,10 @@
 			shape.graphics.endFill();
 		}
 		
-		public function addIFloatable(fi:IFloatable):void {
-			getFloatingItems().push(fi);
-			addChild(fi.getDisplayObject());
-		}
+		//public function addIFloatable(fi:IFloatable):void {
+		//	getFloatingItems().push(fi);
+		//	addChild(fi.getDisplayObject());
+		//}
 		
 		private function addedToStage(ev:Event):void {
 			dots = new Array();
@@ -340,7 +363,6 @@
 		private function getFloatingItems():Array 	{
 			return floatingItems;
 		}
-
 		
 		public function get fill():Number {
 			return _fill;
@@ -358,7 +380,6 @@
 			_bounds = value;
 		}
 		
-		
 		private function set waterWidth(value:Number):void {
 			_waterWidth = value;
 			var space:Number = spacing;
@@ -372,7 +393,6 @@
 		private function get waterWidth():Number {
 			return _waterWidth;
 		}
-		
 		
 		private function get spacing():Number {
 			return Math.ceil(_waterWidth/(dots.length-1-2));

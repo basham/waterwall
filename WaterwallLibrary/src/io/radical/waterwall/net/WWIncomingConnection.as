@@ -1,5 +1,7 @@
 package io.radical.waterwall.net {
 	
+	import flash.utils.Dictionary;
+	
 	import io.radical.waterwall.events.FillEvent;
 	import io.radical.waterwall.events.WaveEvent;
 	
@@ -15,6 +17,11 @@ package io.radical.waterwall.net {
 		
 		public function dispatchWave( strength:Number, x:Number ):void {
 			this.dispatchEvent( new WaveEvent( strength, x ) );
+		}
+		
+		public function dispatchWaveSeries( waves:Dictionary ):void {
+			for ( var key:String in waves )
+				dispatchWave( waves[key], Number(key) );
 		}
 		
 	}

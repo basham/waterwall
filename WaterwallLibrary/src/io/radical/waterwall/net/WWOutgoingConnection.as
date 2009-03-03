@@ -1,4 +1,6 @@
 package io.radical.waterwall.net {
+	import flash.utils.Dictionary;
+	
 	
 	public class WWOutgoingConnection extends WWAbstractConnection {
 		
@@ -12,6 +14,10 @@ package io.radical.waterwall.net {
 		
 		public function sendWave( strength:Number, x:Number ):void {
 			connection.send( connectionName, "dispatchWave", strength, x );
+		}
+		
+		public function sendWaveSeries( waves:Dictionary ):void {
+			connection.send( connectionName, "dispatchWaveSeries", waves );
 		}
 		
 	}

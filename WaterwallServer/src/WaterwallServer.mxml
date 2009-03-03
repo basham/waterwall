@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication
 	xmlns:mx="http://www.adobe.com/2006/mxml"
-	layout="vertical" width="1045" height="385" backgroundColor="#DDDDDD"
+	layout="vertical" width="1045" height="420" backgroundColor="#DDDDDD"
 	paddingTop="10" paddingBottom="10" paddingLeft="20" paddingRight="20"
 	status="FPS: {fps}"
 	creationComplete="init()">
@@ -9,6 +9,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import mx.charts.renderers.DiamondItemRenderer;
 		
 			import io.radical.waterwall.net.WWOutgoingConnection;
 		
@@ -86,13 +87,14 @@
 				trackingUpdate();
 				fps = cam.currentFPS;
 			}
-			
+			private var frame:uint = 0;
 			private function trackingUpdate():void {
 				camData.draw( video );
 				tracker.motionTrack( camData );
 				calculateMotionWaves( tracker.graph() );
 				keyer.keyTrack( camData );
 				calculateFill( keyer.graph() );
+				frame++;
 			}
 			
 			private function key():void {
@@ -126,7 +128,7 @@
 				for each( var r:Region in rag.regions ) {
 					if ( !r.bit ) {
 						
-						for ( var i:uint = r.bounds.y; i < r.bounds.y + r.bounds.height; i++ ) {
+						for ( var i:uint = r.bounds.y; i < r.bounds.y + r.bounds.height; i += 20 ) {
 							if ( !motionWaves[ i ] )
 								motionWaves[ i ] = 0;
 							motionWaves[ i ] += r.bounds.width;
@@ -135,21 +137,45 @@
 					}
 				}
 				//trace( rag.toString() );
+				
+				//var waves:Array = new Array();
+				var waves:Dictionary = new Dictionary(true);
+				var active:Boolean = false;
+				
 				for ( var mw:String in motionWaves ) {
 					var perc:Number = motionWaves[ mw ];
 					perc /= w;
 					perc = NumberUtil.CleanPercentage( perc );
 					motionWaves[ mw ] = perc;
 					
-					//outgoing.sendWave( (9*perc), (this.width * Number(mw))/h );
+					var amplitude:Number = 6 * perc;
+					var x:Number = Math.round( this.width * Number(mw) / h );
+					
+					waves[ String(x) ] = amplitude;
+					
+					active = true;
+					//outgoing.sendWave( amplitude, x );
+					//trace( '#', amplitude, x );
 				}
+				
+				if ( active )
+					outgoing.sendWaveSeries( waves );
+				
+				//if ( waves.length > 0 )
+				//trace('------');
+				//for ( var a:String in waves )
+				//	trace( a, waves[a] );
+				
 				
 				//for each( var p:Number in pressure )
 					//trace( p );
-				tracer();
+				//tracer();
 			}
 			
 			private function calculateFill( rag:RegionAdjacencyGraph ):void {
+				
+				//if ( frame % 15 != 0 )
+				//	return;
 				
 				var surfaceArea:Number = 0;
 				var totalSurfaceArea:Number = w * h;
@@ -160,6 +186,7 @@
 						
 				var fill:Number = ( surfaceArea / totalSurfaceArea );
 				outgoing.sendFill( fill );
+				fillSlider.value = fill * 100;
 			}
 
 			private function tracer():void {
@@ -208,19 +235,26 @@
 			
 			<mx:Image id="img03" width="{w}" height="{h}" />
 			
-			<mx:HBox width="100%">
-
-				<mx:FormItem label="Blur">
-					<mx:HSlider id="keyBlurSlider" width="100" minimum="0" maximum="100"
-						tickInterval="10" snapInterval="1" labels="['Min', 'Max']" change="keyBlurChange()" />
-				</mx:FormItem>
-		
-				<mx:FormItem label="Sensitivity">
-					<mx:HSlider id="keySensitivitySlider" width="100" minimum="0" maximum="99"
-						tickInterval="5" snapInterval="1" labels="['Min', 'Max']" change="keySensitivityChange()" />
-				</mx:FormItem>
+			<mx:VBox width="100%">
 				
-			</mx:HBox>
+				<mx:HBox width="100%">
+	
+					<mx:FormItem label="Blur">
+						<mx:HSlider id="keyBlurSlider" width="100" minimum="0" maximum="100"
+							tickInterval="10" snapInterval="1" labels="['Min', 'Max']" change="keyBlurChange()" />
+					</mx:FormItem>
+			
+					<mx:FormItem label="Sensitivity">
+						<mx:HSlider id="keySensitivitySlider" width="100" minimum="0" maximum="99"
+							tickInterval="5" snapInterval="1" labels="['Min', 'Max']" change="keySensitivityChange()" />
+					</mx:FormItem>
+					
+				</mx:HBox>
+				
+				<mx:HSlider id="fillSlider" width="100%" minimum="0" maximum="100" tickInterval="10" />
+				
+			</mx:VBox>
+
 			
 		</mx:VBox>
 		
