@@ -15,8 +15,8 @@ package io.radical.waterwall.net {
 			this.dispatchEvent( new FillEvent( fill ) );
 		}
 		
-		public function dispatchWave( strength:Number, x:Number ):void {
-			this.dispatchEvent( new WaveEvent( strength, x ) );
+		public function dispatchWave( amplitude:Number, x:Number ):void {
+			this.dispatchEvent( new WaveEvent( amplitude, x ) );
 		}
 		
 		public function dispatchWaveSeries( waves:Dictionary ):void {

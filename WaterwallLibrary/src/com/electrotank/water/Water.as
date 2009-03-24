@@ -79,6 +79,9 @@
 		 * @param	location on x axis
 		 */
 		public function injectWave(A:Number, x:Number):void {
+			x *= this.width;
+			x = Math.round( x );
+			trace( '#', x, A );
 			addWave(A, x, 1);
 			addWave(A, x, -1);
 		}
@@ -98,10 +101,10 @@
 			
 			var tweenValue:Number = NumberUtil.CleanPercentage(value);
 			
-			//this.fill = tweenValue;
+			this.fill = tweenValue;
 			//trace( '%', frame, this.fill );
 			//frame++;
-			//return;
+			return;
 			
 			var initialFill:Number = this.fill;
 			var diff:Number = Math.abs( tweenValue - initialFill );
@@ -132,7 +135,7 @@
 		 * ===============================================================*/	
 
 		private function enterFrameHandler(ev:Event):void {
-			
+			/*
 			if (Math.round(Math.random()*20) == 0) {
 				gentlyDisturbWater();
 			}
@@ -140,7 +143,7 @@
 			if (Math.round(Math.random()*40) == 0) {
 				lessGentlyDisturbWater();
 			}
-			
+			*/
 			propogateWaves();
 			renderWater();
 			//moveFloatingItems();

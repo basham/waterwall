@@ -35,7 +35,7 @@
 			public function start():void {		
 				water = new Water( this.width, this.height );
 				addDisplayObject(water);
-				water.tweenFill( .1 );
+				water.tweenFill( .3 );
 			}
 			
 			public function fullScreen():void {
@@ -47,7 +47,7 @@
 			}
 			
 			private function onWaveInjection( e:WaveEvent ):void {
-				water.injectWave( e.strength, e.x );
+				water.injectWave( e.amplitude, e.x );
 			}
 			
 			public function onMouseDown(ev:Event):void {
