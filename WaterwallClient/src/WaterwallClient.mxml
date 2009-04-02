@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication
 	xmlns:mx="http://www.adobe.com/2006/mxml"
-	layout="vertical" width="1024" backgroundColor="0xffffff" showStatusBar="false"
+	layout="vertical" width="1024" backgroundGradientColors="[0xD0E8FF, 0xFFFFFF]" showStatusBar="false"
 	paddingBottom="0" paddingLeft="0" paddingTop="0" paddingRight="0"
 	creationComplete="init()" applicationComplete="fullScreen()">
 
@@ -21,6 +21,8 @@
 			import com.electrotank.water.Water;
 
 			private var water:Water;
+			private var water2:Water;
+			private var bg_water:Water;
 			private var incoming:WWIncomingConnection;
 			
 			public function init():void{
@@ -32,10 +34,17 @@
 				this.addEventListener(ResizeEvent.RESIZE, onResize);
 			}
 			
-			public function start():void {		
+			public function start():void {
+				bg_water = new Water( this.width, this.height );
+				bg_water.colors = [ 0xB0DAFF, 0xB0DAFF, 0xB0DAFF ];
+				water2 = new Water( this.width, this.height );
+				water2.colors = [ 0xDAEEFF, 0xDAEEFF, 0xDAEEFF ];
 				water = new Water( this.width, this.height );
+				water.colors = [ 0x3285B4, 0x3285B4, 0x3285B4 ];
+				addDisplayObject(water2);
+				addDisplayObject(bg_water);
 				addDisplayObject(water);
-				water.tweenFill( .3 );
+				//water.tweenFill( .3 );
 			}
 			
 			public function fullScreen():void {
@@ -44,10 +53,14 @@
 			
 			private function onFillUpdate( e:FillEvent ):void {
 				water.tweenFill( e.data );
+				water2.tweenFill( e.data - .015 );
+				bg_water.tweenFill( e.data - .01 );
 			}
 			
 			private function onWaveInjection( e:WaveEvent ):void {
 				water.injectWave( e.amplitude, e.x );
+				water2.injectWave( e.amplitude * Math.random(), e.x + ( Math.random() > .5 ? 1 : -1 ) * ( Math.random() * .1 ) );
+				bg_water.injectWave( e.amplitude * Math.random(), e.x + ( Math.random() > .5 ? 1 : -1 ) * ( Math.random() * .1 ) );
 			}
 			
 			public function onMouseDown(ev:Event):void {
@@ -60,6 +73,8 @@
 				var newHeight:Number = this.height;
 				
 				water.setSize(newWidth, newHeight);
+				water2.setSize( newWidth, newHeight );
+				bg_water.setSize( newWidth, newHeight );
 				//water.fill = ( this.width  % 1000 ) / 1000;
 				//water.fill = .9;
 			}

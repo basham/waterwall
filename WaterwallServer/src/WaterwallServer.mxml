@@ -9,6 +9,7 @@
 
 	<mx:Script>
 		<![CDATA[
+		
 			import mx.charts.renderers.DiamondItemRenderer;
 		
 			import io.radical.waterwall.net.WWOutgoingConnection;
@@ -17,6 +18,7 @@
 			import edu.iu.vis.tracking.MotionTracking;
 			import edu.iu.vis.tracking.Region;
 			import edu.iu.vis.tracking.RegionAdjacencyGraph;
+			import edu.iu.vis.utils.ColorUtil;
 			import edu.iu.vis.utils.NumberUtil;
 			
 			[Bindable]
@@ -94,7 +96,8 @@
 				tracker.motionTrack( camData );
 				calculateMotionWaves( tracker.graph() );
 				keyer.keyTrack( camData );
-				calculateFill( keyer.graph() );
+				calculateFill();
+				//calculateFill( keyer.graph() );
 				randomWaves();
 				frame++;
 			}
@@ -149,7 +152,41 @@
 					outgoing.sendWaveSeries( motionWaves );
 			}
 			
-			private function calculateFill( rag:RegionAdjacencyGraph ):void {
+			private function calculateFill():void {
+				
+				if ( fillOverride.selected ) {
+					if ( sendFillCheckbox.selected )
+						outgoing.sendFill( fillSlider.value / 100 );
+					return;
+				}
+				
+				var fillData:BitmapData = keyer.filteredBitmapData;
+				var w:uint = 20;
+				var h:uint = ( fillData.height / fillData.width ) * w;
+				var sx:Number = w / fillData.width;
+				var sy:Number = h / fillData.height;
+				var matrix:Matrix = new Matrix( sx, 0, 0, sy );
+				var data:BitmapData = new BitmapData( w, h );
+				data.draw( fillData, matrix );
+				
+				var averageColor:uint = ColorUtil.AverageColor( data );
+				var fill:Number = ColorUtil.HexToLightness( averageColor );
+				
+				trace( '#', averageColor.toString(16), fill );
+				
+				fillLog.unshift( fill );
+				while( fillLog.length > fillHistorySlider.value )
+					fillLog.pop();
+				
+				var avgFill:Number = Normalize.Average( fillLog, Normalize.LINEAR );
+				
+				if ( sendFillCheckbox.selected )
+					outgoing.sendFill( avgFill );
+					
+				fillSlider.value = avgFill * 100;
+			}
+			
+			private function calculateFills( rag:RegionAdjacencyGraph ):void {
 				
 				if ( fillOverride.selected ) {
 					if ( sendFillCheckbox.selected )
@@ -236,7 +273,6 @@
 				</mx:VBox>
 
 			</mx:HBox>
-			
 
 			<mx:VBox width="100%" backgroundColor="#FFFFFF" paddingTop="10" paddingBottom="10" paddingLeft="10" paddingRight="10">
 				

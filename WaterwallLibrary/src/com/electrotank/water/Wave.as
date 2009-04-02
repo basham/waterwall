@@ -3,8 +3,8 @@
 	public class Wave {
 		
 		private static var Pool:Array = new Array();
-		private static var Instances:uint = 0;
-		private static var Gets:uint = 0;
+		//private static var Instances:uint = 0;
+		//private static var Gets:uint = 0;
 		
 		private var index:int;
 		private var A:Number;
@@ -14,7 +14,7 @@
 		private var startX:Number;
 		
 		public function Wave() {
-			Instances++;
+			//Instances++;
 			//trace( '$', Instances );
 		}
 		
@@ -72,7 +72,7 @@
 		
 		public function remove():void {
 			Pool.push( this );
-							Gets++;
+							//Gets++;
 				//trace( '@', Gets, Pool.length );
 		}
 		

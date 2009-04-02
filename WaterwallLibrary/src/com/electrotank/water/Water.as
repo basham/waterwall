@@ -4,7 +4,6 @@
 	
 	import edu.iu.vis.utils.NumberUtil;
 	
-	import flash.display.DisplayObject;
 	import flash.display.GradientType;
 	import flash.display.InterpolationMethod;
 	import flash.display.Shape;
@@ -55,21 +54,21 @@
 		 * Gently Disturb the Water: injects a wave with power 3, at a random point
 		 */
 		public function gentlyDisturbWater():void {
-			injectWave(3, Math.random()*waterWidth);
+			injectWave(1, Math.random()*waterWidth);
 		}
 		
 		/**
 		 * Less Gently Disturb: wave ower of 7, random point
 		 */
 		public function lessGentlyDisturbWater():void {
-			injectWave(7, Math.random()*waterWidth);
+			injectWave(5, Math.random()*waterWidth);
 		}
 		
 		/**
 		 * Violent disturbence: wave power of 15, random point
 		 */
 		public function violentlyDisturbWater():void {
-			injectWave(15, Math.random()*waterWidth);
+			injectWave(12, Math.random()*waterWidth);
 		}
 		
 		/**
@@ -79,6 +78,7 @@
 		 * @param	location on x axis
 		 */
 		public function injectWave(A:Number, x:Number):void {
+			x = NumberUtil.CleanPercentage( x );
 			x *= this.width;
 			x = Math.round( x );
 			trace( '#', x, A );
@@ -267,6 +267,9 @@
 			}
 		}
 		*/
+		
+		public var colors:Array = [  0x009CE5, 0x006699, 0x00131C ];
+		
 		private function renderWater():void {
 			//trace(this.width);
 			//this.width = 1107;
@@ -280,7 +283,7 @@
 			var type:String = GradientType.LINEAR;
 			
 			//var colors:Array = [ 0x006699, 0x003652];
-			var colors:Array = [  0x009CE5, 0x006699, 0x00131C];
+			//colors:Array = [  0x009CE5, 0x006699, 0x00131C];
 			//var colors:Array = [0x006699, 0x001017];
 			
 			var alphas:Array = [1,1,1];
@@ -398,7 +401,7 @@
 		}
 		
 		private function get spacing():Number {
-			return Math.ceil(_waterWidth/(dots.length-1-2));
+			return Math.ceil(_waterWidth/( dots.length-1-2 ));
 		}
 
 		private function get numDots():Number {
