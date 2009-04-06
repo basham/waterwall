@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:WindowedApplication
+	xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" width="700" height="400" backgroundGradientColors="[0xe4f2ff, 0xFFFFFF]"
+	paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0"
+	creationComplete="init()">
+	
+	
+	<mx:Script>
+		<![CDATA[
+		
+			import io.radical.waterwall.messaging.WWMessageBoard;
+		
+			import mx.core.UIComponent;
+			
+			private var m:WWMessageBoard; 
+			
+			private function init():void {
+				m = new WWMessageBoard();
+				addDisplayObject( m );
+				m.setAnchor( this.width / 2, this.height / 2 );
+				this.addEventListener( MouseEvent.MOUSE_DOWN, onMouseDown );
+				this.addEventListener( MouseEvent.MOUSE_UP, onMouseUp );
+				box.addEventListener( MouseEvent.CLICK, onMouseMove );
+			}
+			
+			private function addDisplayObject( displayObject:DisplayObject ):void {
+				var uic:UIComponent = new UIComponent();
+				uic.addChild( displayObject );
+				box.addChild( uic );
+			}
+			
+			private function message( id:uint = 0 ):void {
+				switch( id ) {
+					case 0:
+						m.queue( "I feel sick." );
+						break;
+					case 1:
+						m.queue( "Play with me!" );
+						break;
+					case 2:
+						m.queue( "Almost there." );
+						break;
+					case 3:
+						m.queue( "Do the wave! Super long." );
+						break;
+					case 4:
+						var stillAlive:String = "This was a triumph.\r" + 
+								"I'm making a note here: HUGE SUCCESS.\r" + 
+								"It's hard to overstate my satisfaction.\r" + 
+								"Aperture Science\r" + 
+								"We do what we must\r" + 
+								"because we can.";
+						m.queue(stillAlive);
+						break;
+				}
+			}
+			
+			private function onMouseDown( event:MouseEvent ):void {
+				this.addEventListener( MouseEvent.MOUSE_MOVE, onMouseMove );
+			}
+			
+			private function onMouseUp( event:MouseEvent ):void {
+				this.removeEventListener( MouseEvent.MOUSE_MOVE, onMouseMove );
+			}
+			
+			private function onMouseMove( event:MouseEvent ):void {
+				m.setAnchor( event.stageX, event.stageY );
+			}
+			
+		]]>
+	</mx:Script>
+	
+	
+	<mx:Box id="box" width="100%" height="100%" />
+	
+	<mx:VBox width="100%" verticalGap="20" paddingLeft="10" paddingRight="10" paddingBottom="10" paddingTop="10">
+		
+		<mx:HBox width="100%">
+			<mx:Button label="Toggle" click="m.toggleShowHide()" />
+		</mx:HBox>
+		
+		<mx:HBox width="100%">
+			<mx:Button label="I feel sick." click="message(0)" />
+			<mx:Button label="Play with me!" click="message(1)" />
+			<mx:Button label="Almost there." click="message(2)" />
+			<mx:Button label="Do the wave! Super long." click="message(3)" />
+			<mx:Button label="Still Alive" click="message(4)" />
+		</mx:HBox>
+		
+	</mx:VBox>
+	
+</mx:WindowedApplication>
