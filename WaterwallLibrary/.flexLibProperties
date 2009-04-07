@@ -62,6 +62,8 @@
 <classEntry path="gs.utils.tween.TweenMaxVars"/>
 <classEntry path="io.radical.waterwall.events.FillEvent"/>
 <classEntry path="io.radical.waterwall.events.WaveEvent"/>
+<classEntry path="io.radical.waterwall.float.FloatingItem"/>
+<classEntry path="io.radical.waterwall.float.IFloatable"/>
 <classEntry path="io.radical.waterwall.messaging.WWMessage"/>
 <classEntry path="io.radical.waterwall.messaging.WWMessageBoard"/>
 <classEntry path="io.radical.waterwall.messaging.WWMovingLabel"/>

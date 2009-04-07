@@ -1,9 +1,11 @@
 ﻿package com.electrotank.water {
 	
-	//import com.electrotank.float.*;
+	import io.radical.waterwall.float.FloatingItem;
+	import io.radical.waterwall.float.IFloatable;
 	
 	import edu.iu.vis.utils.NumberUtil;
 	
+	import flash.display.DisplayObject;
 	import flash.display.GradientType;
 	import flash.display.InterpolationMethod;
 	import flash.display.Shape;
@@ -121,31 +123,26 @@
 			fillTween.setProperty("fill", tweenValue);
 			fillTween.duration = duration;
 		}
-/*
-		public function addFloatingItem(dob:DisplayObject):void {
-			var fi:IFloatable = new FloatingItem();
-			fi.setDisplayObject(dob);
-			fi.setYVelocity(0);
-			addIFloatable(fi);
+
+		public function addFloatingItem( dob:DisplayObject ):void {
+			var fi:FloatingItem = new FloatingItem( dob );
+			addIFloatable( fi );
 		}
-	*/	
+		
+		public function addIFloatable( fi:IFloatable ):void {
+			getFloatingItems().push( fi );
+			addChild( fi.displayObject );
+		}
+		
+
 		/* ===============================================================
 		 * PRIVATE FUNCTIONS: IT DOES STUFF
 		 * ===============================================================*/	
 
 		private function enterFrameHandler(ev:Event):void {
-			/*
-			if (Math.round(Math.random()*20) == 0) {
-				gentlyDisturbWater();
-			}
-
-			if (Math.round(Math.random()*40) == 0) {
-				lessGentlyDisturbWater();
-			}
-			*/
 			propogateWaves();
 			renderWater();
-			//moveFloatingItems();
+			moveFloatingItems();
 		}		 
 		 
 		 /**
@@ -236,12 +233,11 @@
 			}
 		}
 		
-/*
 		private function moveFloatingItems():void {
 			var g:Number = .25;
 			for (var j:int=0;j<getFloatingItems().length;++j) {
 				var fi:FloatingItem = getFloatingItems()[j];
-				var dob:DisplayObject = fi.getDisplayObject();
+				var dob:DisplayObject = fi.displayObject;
 				var d:Number = .9;
 				var x:Number = Math.round(dob.x);
 				var margin:Number = 4;
@@ -255,17 +251,17 @@
 					}
 				}
 				y = y/margin;
-				fi.setYVelocity(fi.getYVelocity()+g);
-				dob.y += fi.getYVelocity();
+				fi.yVelocity += g;
+				dob.y += fi.yVelocity;
 				if (dob.y >= y) {
 					dob.y = y;
-					fi.setYVelocity(fi.getYVelocity()*.4);
+					fi.yVelocity *= .4;
 					var k:Number = .3;
 					dob.rotation += ((ang/margin)*180/Math.PI-dob.rotation)*k;
 				}
 			}
 		}
-		*/
+		
 		
 		public var colors:Array = [  0x009CE5, 0x006699, 0x00131C ];
 		
@@ -319,11 +315,6 @@
 			
 			shape.graphics.endFill();
 		}
-		
-		//public function addIFloatable(fi:IFloatable):void {
-		//	getFloatingItems().push(fi);
-		//	addChild(fi.getDisplayObject());
-		//}
 		
 		private function addedToStage(ev:Event):void {
 			dots = new Array();
