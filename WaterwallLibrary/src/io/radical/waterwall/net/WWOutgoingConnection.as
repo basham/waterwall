@@ -4,11 +4,17 @@ package io.radical.waterwall.net {
 	
 	public class WWOutgoingConnection extends WWAbstractConnection {
 		
+		private var lastFill:Number = 0;
+		
 		public function WWOutgoingConnection( connectionName:String ) {
 			super(connectionName, false);
 		}
 		
 		public function sendFill( fill:Number ):void {
+			fill = Number( fill.toFixed( 6 ) );
+			if ( fill == lastFill )
+				return;
+			lastFill = fill;
 			connection.send( connectionName, "dispatchFill", fill );
 		}
 		

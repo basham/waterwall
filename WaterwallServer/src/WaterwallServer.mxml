@@ -93,11 +93,8 @@
 			private var frame:uint = 0;
 			private function trackingUpdate():void {
 				camData.draw( video );
-				tracker.motionTrack( camData );
-				calculateMotionWaves( tracker.graph() );
-				keyer.keyTrack( camData );
+				calculateMotionWaves();
 				calculateFill();
-				//calculateFill( keyer.graph() );
 				randomWaves();
 				frame++;
 			}
@@ -126,11 +123,14 @@
 				paused = !paused;
 			}
 			
-			private function calculateMotionWaves( rag:RegionAdjacencyGraph ):void {
+			private function calculateMotionWaves():void {
 				
 				if ( !sendWavesCheckbox.selected )
 					return;
-					
+				
+				tracker.motionTrack( camData );
+				var rag:RegionAdjacencyGraph = tracker.graph();
+				
 				var motionWaves:Dictionary = new Dictionary(true);
 				var active:Boolean = false;
 				
@@ -162,9 +162,11 @@
 				
 				if ( fillOverride.selected ) {
 					outgoing.sendFill( fillSlider.value / 100 );
-					trace( '%', fillSlider.value );
+					//trace( '%', fillSlider.value );
 					return;
 				}
+				
+				keyer.keyTrack( camData );
 				
 				var fillData:BitmapData = keyer.filteredBitmapData;
 				var w:uint = 20;
@@ -178,7 +180,7 @@
 				var averageColor:uint = ColorUtil.AverageColor( data );
 				var fill:Number = ColorUtil.HexToLightness( averageColor );
 				
-				trace( '#', averageColor.toString(16), fill );
+				//trace( '#', averageColor.toString(16), fill );
 				
 				fillLog.unshift( fill );
 				while( fillLog.length > fillHistorySlider.value )

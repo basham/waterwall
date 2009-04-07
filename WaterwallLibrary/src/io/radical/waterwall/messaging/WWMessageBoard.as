@@ -1,5 +1,6 @@
 package io.radical.waterwall.messaging {
 	
+	import flash.display.DisplayObject;
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -57,11 +58,12 @@ package io.radical.waterwall.messaging {
 			arrow = new WWMovingShape( 2 );
 			box.fillColor = arrow.fillColor = 0xffc8c8;
 			
-			var dialogShadow:DropShadowFilter = new DropShadowFilter( 4, 60, 0xe73333, .5, 4, 4, 1, 2 );
+			//var dialogShadow:DropShadowFilter = new DropShadowFilter( 4, 60, 0xe73333, .5, 4, 4, 1, 2 );
+			var dialogShadow:DropShadowFilter = new DropShadowFilter( 2, 60, 0xe73333, .5, 1, 1, 1, 2 );
 			bubble.filters = [ dialogShadow ];
 			
 			var labelShadow:DropShadowFilter = new DropShadowFilter( 2, 60, 0xb43332, 1, 1, 1, 1, 2 );
-			label.filters = [ labelShadow ];
+			//label.filters = [ labelShadow ];
 			
 			setMessage( ' ' );
 			
@@ -72,7 +74,7 @@ package io.radical.waterwall.messaging {
 			board.addChild( label );
 			
 			this.addChild( board );
-			this.addChild( s );
+			//this.addChild( s );
 
 			this.addEventListener( Event.ENTER_FRAME, onEnterFrame );
 
@@ -96,7 +98,7 @@ package io.radical.waterwall.messaging {
 			box.addAnchor( width, height );
 			box.addAnchor( 0, height );
 			
-			var maxArrowWidth:Number = 300;
+			var maxArrowWidth:Number = 200;
 			arrow.clearAnchors();
 			arrow.addAnchor( 0, 0 );
 			arrow.addAnchor( width < maxArrowWidth ? width * .4 : maxArrowWidth * .4, 0 ); // 40, 0
@@ -136,6 +138,22 @@ package io.radical.waterwall.messaging {
 		
 		private function resetAnchor():void {
 			setAnchor( absAnchor.x, absAnchor.y );
+		}
+		
+		private var dynamicAnchorDO:DisplayObject;
+		private var xOffset:Number = 0;
+		private var yOffset:Number = 0;
+		
+		public function dynamicAnchor( displayObject:DisplayObject, xOffset:Number = 0, yOffset:Number = 0 ):void {
+			dynamicAnchorDO = displayObject;
+			this.xOffset = xOffset;
+			this.yOffset = yOffset;
+			dynamicAnchorDO.addEventListener( Event.ENTER_FRAME, onDynamicAnchorFrame, false, 0, true );
+		}
+		
+		private function onDynamicAnchorFrame( event:Event ):void {
+			trace( '*', dynamicAnchorDO.x, dynamicAnchorDO.y );
+			setAnchor( dynamicAnchorDO.x + xOffset, dynamicAnchorDO.y + yOffset );
 		}
 		
 		public function queue( dialog:String, duration:Number = -1, delimator:String = '\r' ):void {
@@ -278,9 +296,9 @@ package io.radical.waterwall.messaging {
 			arrow.x = anchor.x - arrow.width * .5; // 150
 			arrow.y = h * .5; // 40
 			
-			s.graphics.clear();
-			s.graphics.beginFill( 0xFF0000 );
-			s.graphics.drawRect( anchor.x - 1, anchor.y - 1, 2, 2 );
+			//s.graphics.clear();
+			//s.graphics.beginFill( 0xFF0000 );
+			//s.graphics.drawRect( anchor.x - 1, anchor.y - 1, 2, 2 );
 		}
 
 	}

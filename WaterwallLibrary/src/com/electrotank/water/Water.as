@@ -1,8 +1,5 @@
 ﻿package com.electrotank.water {
 	
-	import io.radical.waterwall.float.FloatingItem;
-	import io.radical.waterwall.float.IFloatable;
-	
 	import edu.iu.vis.utils.NumberUtil;
 	
 	import flash.display.DisplayObject;
@@ -16,7 +13,8 @@
 	import flash.geom.Rectangle;
 	import flash.utils.*;
 	
-	import mx.effects.easing.Quadratic;
+	import io.radical.waterwall.float.FloatingItem;
+	import io.radical.waterwall.float.IFloatable;
 	
 	public class Water extends Sprite {
 		
@@ -28,9 +26,13 @@
 		private var _bounds:Rectangle;
 		private var _fill:Number;
 		
+		private var maxFill:Number = .9;
+		private var minFill:Number = .05;
+		
 		public function Water( width:Number = 200, height:Number = 100, fill:Number = .5 ) {
 			this.bounds = new Rectangle(0, 0, width, height);
 			this.fill = fill;
+			this.floatingItems = new Array();
 			addEventListener(Event.ADDED_TO_STAGE, addedToStage);
 		}
 		
@@ -83,7 +85,7 @@
 			x = NumberUtil.CleanPercentage( x );
 			x *= this.width;
 			x = Math.round( x );
-			trace( '#', x, A );
+			//trace( '#', x, A );
 			addWave(A, x, 1);
 			addWave(A, x, -1);
 		}
@@ -97,15 +99,14 @@
 		 */
 		 
 		//private var frame:uint = 0;
-		
+		/*
 		public function tweenFill( value:Number, maxDuration:Number = 3, minDuration:Number = 1 ):void {
 			
-			var tweenValue:Number = NumberUtil.CleanPercentage(value);
-			
-			this.fill = tweenValue;
+			this.fill = NumberUtil.CleanPercentage(value);
 			//trace( '%', frame, this.fill );
 			//frame++;
 			return;
+			
 			
 			var initialFill:Number = this.fill;
 			var diff:Number = Math.abs( tweenValue - initialFill );
@@ -122,8 +123,9 @@
 
 			fillTween.setProperty("fill", tweenValue);
 			fillTween.duration = duration;
+			
 		}
-
+		*/
 		public function addFloatingItem( dob:DisplayObject ):void {
 			var fi:FloatingItem = new FloatingItem( dob );
 			addIFloatable( fi );
@@ -214,6 +216,7 @@
 					wave.setFirstOne(false);
 				}
 			}
+			var f:Number = 1 - ( fill * ( maxFill - minFill ) + minFill );
 			for (i=0;i<dots.length;++i) {
 				dot = dots[i];
 				var y:Number = 0;
@@ -229,17 +232,19 @@
 							b.remove();
 					}
 				}
-				dot.y = y + ( (1-fill) * bounds.height );
+				dot.y = y + ( f * bounds.height );
 			}
 		}
 		
 		private function moveFloatingItems():void {
 			var g:Number = .25;
+			//trace( getFloatingItems().length );
 			for (var j:int=0;j<getFloatingItems().length;++j) {
 				var fi:FloatingItem = getFloatingItems()[j];
 				var dob:DisplayObject = fi.displayObject;
 				var d:Number = .9;
-				var x:Number = Math.round(dob.x);
+				var x:Number = Math.round(this.width / 2);
+				//dob.x = x;
 				var margin:Number = 4;
 				var index:Number = Math.floor(x/spacing) - margin/2;
 				var y:Number = 0;
@@ -250,15 +255,17 @@
 						ang += Math.atan2(dots[i].y-dots[i-1].y, dots[i].x-dots[i-1].x);
 					}
 				}
-				y = y/margin;
+				y /= margin;
 				fi.yVelocity += g;
 				dob.y += fi.yVelocity;
+				y -= dob.height * .7;
 				if (dob.y >= y) {
 					dob.y = y;
 					fi.yVelocity *= .4;
 					var k:Number = .3;
 					dob.rotation += ((ang/margin)*180/Math.PI-dob.rotation)*k;
 				}
+				//trace( '@', fi.yVelocity, dob.y );
 			}
 		}
 		
@@ -319,7 +326,7 @@
 		private function addedToStage(ev:Event):void {
 			dots = new Array();
 			waves = new Array();
-			floatingItems = new Array();
+			//floatingItems = new Array();
 			//waterWidth = 600;
 			waterWidth = 1024;
 			//numDots = 60;
@@ -331,8 +338,8 @@
             shape = new Shape();
             addChild(shape);
 			renderWater();
-			gentlyDisturbWater();
-			gentlyDisturbWater();
+			//gentlyDisturbWater();
+			//gentlyDisturbWater();
 		}
 
 		private function initDots(nd:Number):void {
@@ -365,7 +372,7 @@
 		}
 		
 		public function set fill( value:Number ):void {
-			_fill = ( value > 1 ) ? 1 : ( value < 0 ? 0 : value );
+			_fill = NumberUtil.CleanPercentage( value );
 		}		
 
 		private function get bounds():Rectangle {
