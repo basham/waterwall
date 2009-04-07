@@ -1,6 +1,6 @@
 ﻿package com.electrotank.water {
+	
 	//import com.electrotank.float.*;
-	import com.gskinner.motion.GTween;
 	
 	import edu.iu.vis.utils.NumberUtil;
 	
@@ -94,7 +94,6 @@
 		 * @param	length of tween
 		 */
 		 
-		private var fillTween:GTween;
 		//private var frame:uint = 0;
 		
 		public function tweenFill( value:Number, maxDuration:Number = 3, minDuration:Number = 1 ):void {

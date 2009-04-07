@@ -4,11 +4,6 @@
 <classEntry path="com.electrotank.water.Dot"/>
 <classEntry path="com.electrotank.water.Water"/>
 <classEntry path="com.electrotank.water.Wave"/>
-<classEntry path="com.gskinner.motion.GTween"/>
-<classEntry path="com.gskinner.motion.GTweenFilter"/>
-<classEntry path="com.gskinner.motion.GTweenTimeline"/>
-<classEntry path="com.gskinner.motion.GTweeny"/>
-<classEntry path="com.gskinner.motion.MultiTween"/>
 <classEntry path="gs.OverwriteManager"/>
 <classEntry path="gs.TweenGroup"/>
 <classEntry path="gs.TweenLite"/>
