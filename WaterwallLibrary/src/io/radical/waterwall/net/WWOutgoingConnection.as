@@ -1,6 +1,6 @@
 package io.radical.waterwall.net {
-	import flash.utils.Dictionary;
 	
+	import flash.utils.Dictionary;
 	
 	public class WWOutgoingConnection extends WWAbstractConnection {
 		
