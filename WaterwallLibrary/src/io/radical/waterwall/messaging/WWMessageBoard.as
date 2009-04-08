@@ -152,7 +152,7 @@ package io.radical.waterwall.messaging {
 		}
 		
 		private function onDynamicAnchorFrame( event:Event ):void {
-			trace( '*', dynamicAnchorDO.x, dynamicAnchorDO.y );
+			//trace( '*', dynamicAnchorDO.x, dynamicAnchorDO.y );
 			setAnchor( dynamicAnchorDO.x + xOffset, dynamicAnchorDO.y + yOffset );
 		}
 		

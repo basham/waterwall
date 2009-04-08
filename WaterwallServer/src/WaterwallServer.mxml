@@ -3,7 +3,7 @@
 	xmlns:mx="http://www.adobe.com/2006/mxml"
 	layout="vertical" width="1045" height="600" backgroundColor="#DDDDDD"
 	paddingTop="10" paddingBottom="10" paddingLeft="20" paddingRight="20"
-	status="FPS: {fps}"
+	status="Server FPS: {ff} | Camera FPS: {fps}"
 	creationComplete="init()">
 
 
@@ -48,7 +48,21 @@
 				setupScreen();
 				outgoing = new WWOutgoingConnection( "_WWConnection" );
 				addEventListener(Event.ENTER_FRAME, onFrame);
+				var timer:Timer = new Timer(1000);
+				timer.start();
+				timer.addEventListener( TimerEvent.TIMER, onTimerFPS );
 			}
+			
+			private function onTimerFPS( e:TimerEvent ):void {
+				trace( '%', f, this.frameRate );
+				ff = f;
+				f = 0;
+				//f %= this.frameRate;
+			}
+			
+			private var f:uint = 0;
+			[Bindable]
+			private var ff:uint = 0;
 			
 			private function setupTracker():void {
 				tracker = new MotionTracking( w, h, 32, 1 );
@@ -62,7 +76,7 @@
 			
 			private function camera():void {
 				cam = Camera.getCamera();
-				cam.setMode( cam.width, cam.height, 30 );
+				cam.setMode( cam.width, cam.height, 24 );
 				
 				video = new Video(w, h);
 				video.attachCamera(cam);
@@ -85,6 +99,7 @@
 			}
 	
 			private function onFrame( event:Event ):void {
+				f++;
 				if ( paused )
 					return;
 				trackingUpdate();
@@ -146,7 +161,7 @@
 						var amplitude:Number = perc * ( ampHigh - ampLow ) + ampLow;
 						
 						motionWaves[ y / h ] = amplitude;
-						trace( '$', y / h, amplitude );
+						//trace( '$', y / h, amplitude );
 						active = true;
 					}
 				}

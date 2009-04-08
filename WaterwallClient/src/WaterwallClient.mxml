@@ -2,12 +2,13 @@
 <mx:WindowedApplication
 	xmlns:mx="http://www.adobe.com/2006/mxml"
 	layout="vertical" width="1024" backgroundGradientColors="[0xD0E8FF, 0xFFFFFF]" showStatusBar="false"
-	paddingBottom="0" paddingLeft="0" paddingTop="0" paddingRight="0"
-	creationComplete="init()" applicationComplete="fullScreen()">
+	paddingBottom="0" paddingLeft="0" paddingTop="0" paddingRight="0" frameRate="30"
+	creationComplete="init()" applicationComplete="appComplete()">
 
 
 	<mx:Script>
 		<![CDATA[
+			import flash.utils.getTimer;
 			import io.radical.waterwall.messaging.WWMessageBoard;
 			import io.radical.waterwall.buoy.Buoy;
 		
@@ -33,13 +34,71 @@
 			private var messageId:uint = 0;
 			private var messages:Array = new Array();
 			
+			[Bindable]
+			private var fps:Number = 0;
+			
 			public function init():void{
 				start();
 				incoming = new WWIncomingConnection( "_WWConnection" );
 				incoming.addEventListener( FillEvent.FILL_UPDATE, onFillUpdate );
 				incoming.addEventListener( WaveEvent.WAVE_INJECTION, onWaveInjection );
-				this.addEventListener(MouseEvent.CLICK, onMouseDown);
+				//this.addEventListener(MouseEvent.CLICK, onMouseDown);
 				this.addEventListener(ResizeEvent.RESIZE, onResize);
+				this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
+				//this.frameRate = 60;
+				//this.
+				trace( '*', this.frameRate );
+				var timer:Timer = new Timer(1000);
+				timer.start();
+				timer.addEventListener( TimerEvent.TIMER, onTimerFPS );
+				
+				var t:Timer = new Timer(1000 / 30);
+				t.start();
+				t.addEventListener( TimerEvent.TIMER, onTimerSteadyFPS );
+			}
+			
+			private function appComplete():void {
+				fullScreen();
+				this.stage.frameRate = 30;
+			}
+			
+			private function onTimerFPS( e:TimerEvent ):void {
+				trace( '#', f, c, this.stage.frameRate );
+				ff = f;
+				cc = c;
+				f = c = 0;
+				//if ( ff == 30 ) {
+				//	this.stage.frameRate = 60;
+				//}
+				//f %= this.frameRate;
+			}
+			private var gt:uint = 0;
+			private function onTimerSteadyFPS( e:TimerEvent ):void {
+				c++;
+				var g:uint = flash.utils.getTimer();
+				//trace( '$', g - gt );
+				gt = g;
+				//trace( '$', c, cc );
+				//cc = c;
+				//c = 0;
+				//if ( cc == 30 ) {
+				//	this.stage.frameRate = 60;
+				//}
+				//f %= this.frameRate;
+			}
+			
+			[Bindable]
+			private var ff:uint = 0;
+			private var f:uint = 0;
+			[Bindable]
+			private var cc:uint = 0;
+			private var c:uint = 0;
+			
+			private function onEnterFrame(e:Event):void {
+				f++;
+				//c++;
+				//trace( this.frameRate );
+				//fps = this.frameRate;
 			}
 			
 			public function start():void {
@@ -124,5 +183,7 @@
 	
 	
 	<mx:VBox id="box" width="100%" height="100%" verticalGap="0" />
+	
+	<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc}" color="#FFFFFF" />
 	
 </mx:WindowedApplication>
