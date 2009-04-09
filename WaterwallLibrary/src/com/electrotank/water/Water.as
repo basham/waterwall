@@ -258,7 +258,7 @@
 				y /= margin;
 				fi.yVelocity += g;
 				dob.y += fi.yVelocity;
-				y -= dob.height * .7;
+				y -= dob.height * .85;
 				if (dob.y >= y) {
 					dob.y = y;
 					fi.yVelocity *= .4;

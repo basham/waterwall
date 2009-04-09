@@ -11,7 +11,7 @@ package io.radical.waterwall.net {
 		}
 		
 		public function sendFill( fill:Number ):void {
-			fill = Number( fill.toFixed( 6 ) );
+			fill = Number( fill.toFixed( 3 ) );
 			if ( fill == lastFill )
 				return;
 			lastFill = fill;

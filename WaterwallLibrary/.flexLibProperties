@@ -13,7 +13,6 @@
 <classEntry path="gs.utils.tween.TweenLiteVars"/>
 <classEntry path="gs.easing.Circ"/>
 <classEntry path="gs.plugins.RemoveTintPlugin"/>
-<classEntry path="io.radical.waterwall.utils.Normalize"/>
 <classEntry path="gs.plugins.ShortRotationPlugin"/>
 <classEntry path="gs.easing.Elastic"/>
 <classEntry path="io.radical.waterwall.utils.ArrayUtil"/>
@@ -37,6 +36,7 @@
 <classEntry path="gs.utils.tween.TweenMaxVars"/>
 <classEntry path="gs.utils.tween.ColorMatrixFilterVars"/>
 <classEntry path="gs.TweenLite"/>
+<classEntry path="io.radical.waterwall.utils.Log"/>
 <classEntry path="io.radical.waterwall.float.IFloatable"/>
 <classEntry path="gs.TweenMax"/>
 <classEntry path="gs.utils.tween.ArrayTweenInfo"/>

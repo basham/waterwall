@@ -8,33 +8,17 @@ package io.radical.waterwall.net {
 	[Bindable]
 	public class WWIncomingConnection extends WWAbstractConnection {
 		
-		public var enabled:Boolean = true;
-		[Bindable]
-		public var conflicted:Boolean = false;
-		
 		public function WWIncomingConnection( connectionName:String ) {
 			super(connectionName, true);
 		}
 		
 		public function dispatchFill( fill:Number ):void {
-			if ( !enabled ) {
-				conflicted = true;
-				trace( "** FILL Conflict" );
-				return;
-			}
-			//trace("!!!!!!!!!!  FILL");
-			enabled = false;
+			_connected = true;
 			this.dispatchEvent( new FillEvent( fill ) );
 		}
 		
 		public function dispatchWave( amplitude:Number, x:Number ):void {
-			if ( !enabled ) {
-				conflicted = true;
-				trace( "** WAVE Conflict" );
-				return;
-			}
-			//trace("!!!!!!!!!!  WAVE");
-			enabled = false;
+			_connected = true;
 			_dispatchWave( amplitude, x );
 		}
 		
@@ -43,16 +27,14 @@ package io.radical.waterwall.net {
 		}
 		
 		public function dispatchWaveSeries( waves:Dictionary ):void {
-			if ( !enabled ) {
-				conflicted = true;
-				trace( "** SERIES Conflict" );
-				return;
-			}
-			//trace("!!!!!!!!!!  SERIES");
-			enabled = false;
+			_connected = true;
 			for ( var key:String in waves )
 				_dispatchWave( waves[key], Number(key) );
 		}
 		
+		public function reconnect():void {
+			this.connect();
+		}
+				
 	}
 }

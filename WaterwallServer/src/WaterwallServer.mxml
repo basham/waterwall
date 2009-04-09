@@ -2,7 +2,7 @@
 <mx:WindowedApplication
 	xmlns:mx="http://www.adobe.com/2006/mxml"
 	layout="vertical" width="1045" height="600" backgroundColor="#DDDDDD"
-	paddingTop="10" paddingBottom="10" paddingLeft="20" paddingRight="20"
+	paddingTop="10" paddingBottom="10" paddingLeft="20" paddingRight="20" frameRate="10"
 	status="Server FPS: {ff} | Camera FPS: {fps}"
 	creationComplete="init()">
 
@@ -196,17 +196,17 @@
 				var fill:Number = ColorUtil.HexToLightness( averageColor );
 				
 				//trace( '#', averageColor.toString(16), fill );
-				
+				/*
 				fillLog.unshift( fill );
 				while( fillLog.length > fillHistorySlider.value )
 					fillLog.pop();
 				
 				var avgFill:Number = Normalize.Average( fillLog, Normalize.LINEAR );
-				
+				*/
 				if ( sendFillCheckbox.selected )
-					outgoing.sendFill( avgFill );
+					outgoing.sendFill( fill );
 					
-				fillSlider.value = avgFill * 100;
+				fillSlider.value = fill * 100;
 			}
 			
 			private function calculateFills( rag:RegionAdjacencyGraph ):void {

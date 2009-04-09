@@ -8,7 +8,10 @@
 
 	<mx:Script>
 		<![CDATA[
-			import flash.utils.getTimer;
+			import io.radical.waterwall.utils.Log;
+		
+			import edu.iu.vis.utils.Normalize;
+			
 			import io.radical.waterwall.messaging.WWMessageBoard;
 			import io.radical.waterwall.buoy.Buoy;
 		
@@ -20,8 +23,12 @@
 			import mx.core.UIComponent;
 
 			import flash.events.MouseEvent;
+			import flash.utils.getTimer;
 			
 			import com.electrotank.water.Water;
+			
+			import gs.TweenLite;
+			import gs.easing.*;
 
 			private var water:Water;
 			private var water2:Water;
@@ -37,6 +44,9 @@
 			
 			[Bindable]
 			private var fps:Number = 0;
+			[Bindable]
+			private var cstatus:String = 'Connected';
+			private var cs:uint = 0;
 			
 			public function init():void{
 				start();
@@ -68,6 +78,21 @@
 				ff = f;
 				cc = c;
 				f = c = 0;
+				//trace( incoming.connected );
+				incoming.close();
+				incoming.reconnect();
+				/*
+				if ( ff < 22 ) {
+					incoming.close();
+					//trace( incoming.connected );
+					cstatus = 'Closed';
+				}
+				else if ( ff >= 30 && !incoming.connected ) {
+					incoming.reconnect();
+					cs++;
+					cstatus = 'Reconnected ' + cs;
+				}
+				*/
 				//if ( ff == 30 ) {
 				//	this.stage.frameRate = 60;
 				//}
@@ -95,11 +120,34 @@
 			private var cc:uint = 0;
 			private var c:uint = 0;
 			
+			private var ampLog:Log = new Log( 50 );
+			
 			private function onEnterFrame(e:Event):void {
 				f++;
 				//c++;
 				//trace( this.frameRate );
 				//fps = this.frameRate;
+				var latestFill:Number = fillLog.length > 0 ? fillLog.index(0) : 0;
+				fillLog.push( latestFill );
+				var avgFill:Number = fillLog.average();
+				water.fill = bg_water.fill = water2.fill = avgFill;
+				
+				var avgAmp:Number = ampLog.average();
+				trace( "**************", avgFill );
+				if ( board.isQueueEmpty() ) {
+	
+					if ( board.secondsSinceLastMessage() > 10 && avgFill == 0 )
+						message( EMPTY );
+						
+					if ( board.secondsSinceLastMessage() > 5 && avgAmp > 6 )
+						message( STRONG_AMPLITUDE );
+						
+					if ( board.secondsSinceLastMessage() > 10 && avgFill < .06 && avgFill > 0 )
+						message( FEW );
+					
+					if ( board.secondsSinceLastMessage() > 25 )
+						message( AGNOSTIC );
+				}
 			}
 			
 			public function start():void {
@@ -125,14 +173,73 @@
 				
 				var t:Timer = new Timer( 5000 );
 				t.start();
-				t.addEventListener(TimerEvent.TIMER, onTimer);
+				//t.addEventListener(TimerEvent.TIMER, onTimer);
 				
-				messages.push( "This is a triump." );
+				messages.push( "This is a triumph." );
 				messages.push( "Come with me if you want to live." );
 				messages.push( "Lonely me." );
 				messages.push( "Woe is me." );
-			}
 				
+				emptyMessages.push( "Where'd everybody go?" );
+				emptyMessages.push( "Hey You! Come play with me!" );
+				emptyMessages.push( "I'm so scared!" );
+				emptyMessages.push( "It sure is lonely over here..." );
+				
+				strongAmpMessages.push( "Surf's up!" );
+				strongAmpMessages.push( "Slow down there, tiger!" );
+				strongAmpMessages.push( "I'm gonna be sick..." );
+				
+				agnosticMessages.push( "Why are fish so smart?\rBecause they live in schools!" );
+				//agnosticMessages.push( "What do you call a fish with no eyes?\rFsh!" );
+				agnosticMessages.push( "Why do all pirates have eyepatches?\rChuck Norris" );
+					
+				fewMessages.push( "Where are all your friends?" );
+				fewMessages.push( "Where's the party at?" );
+			}
+			
+			private var emptyMessages:Array = new Array();
+			private var strongAmpMessages:Array = new Array();
+			private var agnosticMessages:Array = new Array();
+			private var fewMessages:Array = new Array();
+			
+			private var lastIndex:Dictionary = new Dictionary( true );
+			
+			private const EMPTY:uint = 0;
+			private const STRONG_AMPLITUDE:uint = 1;
+			private const AGNOSTIC:uint = 2;
+			private const FEW:uint = 3;
+			
+			private function randomIndex( array:Array, notIndex:int = -1 ):uint {
+				var r:uint = 0;
+				//if ( array.length <= 1 )
+				//	return r;
+				//while ( r != notIndex || notIndex == -1 )
+					r = Math.floor( Math.random() * array.length );
+				return r;
+			}
+			
+			private function message( caseId:uint ):void {
+				var ri:uint = 0;
+				switch( caseId ) {
+					case EMPTY:
+						ri = randomIndex( emptyMessages );
+						queue( emptyMessages[ ri ] );
+						break;
+					case STRONG_AMPLITUDE:
+						ri = randomIndex( strongAmpMessages );
+						queue( strongAmpMessages[ ri ] );
+						break;
+					case AGNOSTIC:
+						ri = randomIndex( agnosticMessages );
+						queue( agnosticMessages[ ri ] );
+						break;
+					case FEW:
+						ri = randomIndex( fewMessages );
+						queue( fewMessages[ ri ] );
+						break;
+				}
+			}
+			
 			private function onTimer( event:TimerEvent ):void {
 				queue( messages[ messageId++ ] as String );
 				messageId = messageId % messages.length;
@@ -147,16 +254,31 @@
 				this.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
 			}
 			
+			//private var fillLog:Array = new Array();
+			//private var fillHistory:uint = 50;
+			private var lastFill:Number = 0;
+			private var fillLog:Log = new Log( 50 );
+			
 			private function onFillUpdate( e:FillEvent ):void {
-				water.fill = bg_water.fill = water2.fill = e.data;
-				incoming.enabled = true;
+				fillLog.push( e.data );
+				//fillLog.unshift( e.data );
+				//while( fillLog.length > fillHistory )
+				//	fillLog.pop();
+				//
+				//var currFill:Number = e.data;
+				//var duration:Number = 5 * Math.abs( currFill - lastFill );
+				//TweenLite.to( water, duration, { fill: currFill, ease: gs.easing.Quad.easeInOut } );
+				//TweenLite.to( bg_water, duration, { fill: currFill, ease: gs.easing.Quad.easeInOut } );
+				//TweenLite.to( water2, duration, { fill: currFill, ease: gs.easing.Quad.easeInOut } );
+				//
+				//lastFill = currFill;
 			}
 			
 			private function onWaveInjection( e:WaveEvent ):void {
+				ampLog.push( e.amplitude );
 				water.injectWave( e.amplitude, e.x );
 				water2.injectWave( e.amplitude * Math.random(), e.x + ( Math.random() > .5 ? 1 : -1 ) * ( Math.random() * .1 ) );
 				bg_water.injectWave( e.amplitude * Math.random(), e.x + ( Math.random() > .5 ? 1 : -1 ) * ( Math.random() * .1 ) );
-				incoming.enabled = true;
 			}
 			
 			public function onMouseDown(ev:Event):void {
@@ -187,6 +309,6 @@
 	
 	<mx:VBox id="box" width="100%" height="100%" verticalGap="0" />
 	
-	<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | CONFLICTED ' + incoming.conflicted}" color="#FFFFFF" />
+	<!--<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | CONNECTION ' + cstatus}" color="#FFFFFF" />-->
 	
 </mx:WindowedApplication>

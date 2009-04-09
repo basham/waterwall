@@ -9,9 +9,9 @@ package io.radical.waterwall.buoy {
 
 	public class Buoy extends Sprite {
 		
-		[Embed(source="../assets/buoy_2c.swf")]
+		[Embed(source="../assets/buoy_4b.swf")]
 		private var buoySWF:Class;
-		
+
 		private var buoy:Sprite;
 		private var base:Shape = new Shape();
 		

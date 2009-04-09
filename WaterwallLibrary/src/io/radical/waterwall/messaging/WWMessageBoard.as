@@ -8,6 +8,7 @@ package io.radical.waterwall.messaging {
 	import flash.filters.DropShadowFilter;
 	import flash.geom.Point;
 	import flash.utils.Timer;
+	import flash.utils.getTimer;
 	
 	import gs.TweenLite;
 	import gs.easing.*;
@@ -156,6 +157,16 @@ package io.radical.waterwall.messaging {
 			setAnchor( dynamicAnchorDO.x + xOffset, dynamicAnchorDO.y + yOffset );
 		}
 		
+		public var activeQueueLength:uint = 0;
+		
+		public function isQueueEmpty():Boolean {
+			return activeQueueLength == 0;
+		}
+		
+		public function secondsSinceLastMessage():Number {
+			return ( flash.utils.getTimer() - latestMessageEndTime ) / 1000;
+		}
+		
 		public function queue( dialog:String, duration:Number = -1, delimator:String = '\r' ):void {
 			var lines:Array = dialog.split( delimator );
 			for each( var line:String in lines )
@@ -164,6 +175,7 @@ package io.radical.waterwall.messaging {
 		
 		private function _queue( message:String, duration:Number = -1 ):void {
 
+			activeQueueLength++;
 			duration = duration == -1 ? message.length * .15 : duration;
 			messageQueue.push( new WWMessage( message, duration ) );
 			
@@ -177,6 +189,8 @@ package io.radical.waterwall.messaging {
 			if ( messageQueue.length > 0 )
 				loadMessage( messageQueue.shift() as WWMessage );
 		}
+		
+		private var latestMessageEndTime:int = 0;
 		
 		private function loadMessage( message:WWMessage ):void {
 			setMessage( message.message );
@@ -234,6 +248,9 @@ package io.radical.waterwall.messaging {
 		
 		private function onHideComplete():void {
 			state = HIDDEN;
+			latestMessageEndTime = flash.utils.getTimer();
+			if ( activeQueueLength > 0 )
+				activeQueueLength--;
 		}
 		
 		private function transition( substate:uint = 0, duration:Number = .75 ):void {
@@ -262,6 +279,9 @@ package io.radical.waterwall.messaging {
 					break;
 				case 2:
 					state = NORMAL;
+					latestMessageEndTime = flash.utils.getTimer();
+					if ( activeQueueLength > 0 )
+						activeQueueLength--;
 			}
 		}
 

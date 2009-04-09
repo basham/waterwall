@@ -26,7 +26,7 @@ package io.radical.waterwall.messaging {
 			format = new TextFormat();
 			format.font = "messageFont";
 			format.color = 0xFFCCCC;
-			format.size = 20;
+			format.size = 16;
 			
 			this.embedFonts = true;
 			this.selectable = false;
