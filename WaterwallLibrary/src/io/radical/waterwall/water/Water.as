@@ -18,6 +18,8 @@
 	
 	public class Water extends Sprite {
 		
+		private const NUM_DOTS:uint = 28;
+		
 		private var dots:Array = new Array();
 		private var waves:Array = new Array();
 		private var floatingItems:Array = new Array();
@@ -36,38 +38,20 @@
 		public function Water( width:Number = 200, height:Number = 100, fill:Number = .5 ) {
 			this.bounds = new Rectangle( 0, 0, width, height );
 			this.fill = fill;
-			addEventListener( Event.ADDED_TO_STAGE, addedToStage );
-		}
-		
-		
-		/* ===============================================================
-		 * INITIATION
-		 * ===============================================================*/
-		 
-		private function addedToStage(ev:Event):void {
-			//dots = new Array();
-			//_waves = new Array();
-			//floatingItems = new Array();
-			//waterWidth = 600;
-			waterWidth = 1024;
-			//numDots = 60;
-			//numDots = 25;
-			//spacing = waterWidth/numDots;
+			this.waterWidth = width;
 			
-			addEventListener( Event.ENTER_FRAME, onEnterFrame );
-			initDots(28);
             shape = new Shape();
             addChild(shape);
-			renderWater();
-		}
-
-		private function initDots(nd:Number):void {
-			for (var i:int=0;i<nd;++i ){
+            
+            for ( var i:uint = 0; i < NUM_DOTS; ++i ){
 				var dot:Dot = new Dot();
-				dot.x = (i-1)* Math.ceil( waterWidth / (nd-1-2) );
+				dot.x = ( i - 1 )* Math.ceil( waterWidth / ( NUM_DOTS - 1 - 2 ) );
 				dot.y = 0;
 				dots.push( dot );
 			}
+			
+			renderWater();
+			this.addEventListener( Event.ENTER_FRAME, onEnterFrame );
 		}
 
 
@@ -134,6 +118,7 @@
 			wave.startX = x;
 			wave.startTime = getTimer();
 			waves.push( wave );
+			//propogateWaves();
 		}
 
 		public function addFloatingItem( dob:DisplayObject ):void {

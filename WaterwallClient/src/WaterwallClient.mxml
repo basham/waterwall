@@ -11,6 +11,7 @@
 
 			import edu.iu.vis.utils.Normalize;
 			
+			import io.radical.waterwall.messaging.MessageTypes;
 			import io.radical.waterwall.messaging.WWMessageBoard;
 			import io.radical.waterwall.buoy.Buoy;
 			import io.radical.waterwall.net.WWIncomingConnection;
@@ -44,21 +45,61 @@
 			[Bindable]
 			private var fps:Number = 0;
 			[Bindable]
+			private var lowestFPS:uint = 0;
+			[Bindable]
 			private var cstatus:String = 'Connected';
 			private var cs:uint = 0;
 			
 			private var aoc:WWAutoOutgoingConnection;
 			
+			private var lastFill:Number = 0;
+			private var fillLog:Log = new Log( 50 );
+			
+			
+			[Bindable]
+			private var ff:uint = 0;
+			private var f:uint = 0;
+			[Bindable]
+			private var cc:uint = 0;
+			private var c:uint = 0;
+			
+			private var ampLog:Log = new Log( 50 );
+			
+			private var gt:uint = 0;
+			
 			public function init():void{
-				start();
+				
+				bg_water = new Water( this.width, this.height );
+				bg_water.colors = [ 0xB0DAFF, 0xB0DAFF, 0xB0DAFF ];
+				water2 = new Water( this.width, this.height );
+				water2.colors = [ 0xDAEEFF, 0xDAEEFF, 0xDAEEFF ];
+				water = new Water( this.width, this.height );
+				water.colors = [ 0x3285B4, 0x3285B4, 0x3285B4 ];
+				
+				var buoyWidth:Number = 20;
+				buoy = new Buoy( buoyWidth );
+				buoy.anchorX = this.width / 2;
+				buoy.borderRadius = this.width * .3;
+				board.dynamicAnchor( buoy, buoyWidth * .5, - buoyWidth * .25 );
+				water2.addFloatingItem( buoy );
+				
+				addDisplayObject(board);
+				addDisplayObject(water2);
+				addDisplayObject(bg_water);
+				addDisplayObject(water);
+				
+				//var t:Timer = new Timer( 5000 );
+				//t.start();
+				//t.addEventListener(TimerEvent.TIMER, onTimer);
+				
 				incoming = new WWIncomingConnection( "_WWConnection" );
 				incoming.addEventListener( FillEvent.FILL_UPDATE, onFillUpdate );
 				incoming.addEventListener( WaveEvent.WAVE_INJECTION, onWaveInjection );
 				
 				aoc = new WWAutoOutgoingConnection( incoming, 30 );
 				
-				this.addEventListener(ResizeEvent.RESIZE, onResize);
-				this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
+				this.addEventListener( ResizeEvent.RESIZE, onResize );
+				this.addEventListener( Event.ENTER_FRAME, onEnterFrame );
 				//this.frameRate = 60;
 				//this.
 				//trace( '*', this.frameRate );
@@ -82,9 +123,11 @@
 				cc = c;
 				f = c = 0;
 				//trace( incoming.connected );
-				incoming.close();
-				incoming.reconnect();
-				
+				//incoming.close();
+				//incoming.reconnect();
+				if ( ff < lowestFPS || lowestFPS == 0 )
+					lowestFPS = ff;
+					
 				aoc.sendWaves = ( ff > 18 );
 				
 				/*
@@ -104,7 +147,7 @@
 				//}
 				//f %= this.frameRate;
 			}
-			private var gt:uint = 0;
+			
 			private function onTimerSteadyFPS( e:TimerEvent ):void {
 				c++;
 				var g:uint = flash.utils.getTimer();
@@ -118,15 +161,6 @@
 				//}
 				//f %= this.frameRate;
 			}
-			
-			[Bindable]
-			private var ff:uint = 0;
-			private var f:uint = 0;
-			[Bindable]
-			private var cc:uint = 0;
-			private var c:uint = 0;
-			
-			private var ampLog:Log = new Log( 50 );
 			
 			private function onEnterFrame(e:Event):void {
 				f++;
@@ -143,107 +177,21 @@
 				if ( board.isQueueEmpty() ) {
 	
 					if ( board.secondsSinceLastMessage() > 10 && avgFill == 0 )
-						message( EMPTY );
+						message( MessageTypes.EMPTY );
 						
 					if ( board.secondsSinceLastMessage() > 5 && avgAmp > 6 )
-						message( STRONG_AMPLITUDE );
+						message( MessageTypes.STRONG_AMPLITUDE );
 						
 					if ( board.secondsSinceLastMessage() > 10 && avgFill < .06 && avgFill > 0 )
-						message( FEW );
+						message( MessageTypes.FEW );
 					
 					if ( board.secondsSinceLastMessage() > 25 )
-						message( AGNOSTIC );
+						message( MessageTypes.AGNOSTIC );
 				}
 			}
 			
-			public function start():void {
-				bg_water = new Water( this.width, this.height );
-				bg_water.colors = [ 0xB0DAFF, 0xB0DAFF, 0xB0DAFF ];
-				water2 = new Water( this.width, this.height );
-				water2.colors = [ 0xDAEEFF, 0xDAEEFF, 0xDAEEFF ];
-				water = new Water( this.width, this.height );
-				water.colors = [ 0x3285B4, 0x3285B4, 0x3285B4 ];
-				
-				var buoyWidth:Number = 20;
-				buoy = new Buoy( buoyWidth );
-				buoy.anchorX = this.width / 2;
-				buoy.borderRadius = this.width * .3;
-				board.dynamicAnchor( buoy, buoyWidth * .5, - buoyWidth * .25 );
-				water2.addFloatingItem( buoy );
-				
-				addDisplayObject(board);
-				addDisplayObject(water2);
-				addDisplayObject(bg_water);
-				addDisplayObject(water);
-				//water.tweenFill( .3 );
-				
-				var t:Timer = new Timer( 5000 );
-				t.start();
-				//t.addEventListener(TimerEvent.TIMER, onTimer);
-				
-				messages.push( "This is a triumph." );
-				messages.push( "Come with me if you want to live." );
-				messages.push( "Lonely me." );
-				messages.push( "Woe is me." );
-				
-				emptyMessages.push( "Where'd everybody go?" );
-				emptyMessages.push( "Hey You! Come play with me!" );
-				emptyMessages.push( "I'm so scared!" );
-				emptyMessages.push( "It sure is lonely over here..." );
-				
-				strongAmpMessages.push( "Surf's up!" );
-				strongAmpMessages.push( "Slow down there, tiger!" );
-				strongAmpMessages.push( "I'm gonna be sick..." );
-				
-				agnosticMessages.push( "Why are fish so smart?\rBecause they live in schools!" );
-				//agnosticMessages.push( "What do you call a fish with no eyes?\rFsh!" );
-				agnosticMessages.push( "Why do all pirates have eyepatches?\rChuck Norris" );
-					
-				fewMessages.push( "Where are all your friends?" );
-				fewMessages.push( "Where's the party at?" );
-			}
-			
-			private var emptyMessages:Array = new Array();
-			private var strongAmpMessages:Array = new Array();
-			private var agnosticMessages:Array = new Array();
-			private var fewMessages:Array = new Array();
-			
-			private var lastIndex:Dictionary = new Dictionary( true );
-			
-			private const EMPTY:uint = 0;
-			private const STRONG_AMPLITUDE:uint = 1;
-			private const AGNOSTIC:uint = 2;
-			private const FEW:uint = 3;
-			
-			private function randomIndex( array:Array, notIndex:int = -1 ):uint {
-				var r:uint = 0;
-				//if ( array.length <= 1 )
-				//	return r;
-				//while ( r != notIndex || notIndex == -1 )
-					r = Math.floor( Math.random() * array.length );
-				return r;
-			}
-			
-			private function message( caseId:uint ):void {
-				var ri:uint = 0;
-				switch( caseId ) {
-					case EMPTY:
-						ri = randomIndex( emptyMessages );
-						queue( emptyMessages[ ri ] );
-						break;
-					case STRONG_AMPLITUDE:
-						ri = randomIndex( strongAmpMessages );
-						queue( strongAmpMessages[ ri ] );
-						break;
-					case AGNOSTIC:
-						ri = randomIndex( agnosticMessages );
-						queue( agnosticMessages[ ri ] );
-						break;
-					case FEW:
-						ri = randomIndex( fewMessages );
-						queue( fewMessages[ ri ] );
-						break;
-				}
+			private function message( messageType:String ):void {
+				queue( MessageTypes.RandomMessage( messageType ) );
 			}
 			
 			private function onTimer( event:TimerEvent ):void {
@@ -251,19 +199,14 @@
 				messageId = messageId % messages.length;
 			}
 			
-			public function queue( message:String ):void {
+			private function queue( message:String ):void {
 				trace( "&&&&&&&", message );
 				board.queue( message );
 			}
 			
-			public function fullScreen():void {
+			private function fullScreen():void {
 				this.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
 			}
-			
-			//private var fillLog:Array = new Array();
-			//private var fillHistory:uint = 50;
-			private var lastFill:Number = 0;
-			private var fillLog:Log = new Log( 50 );
 			
 			private function onFillUpdate( e:FillEvent ):void {
 				fillLog.push( e.data );
@@ -294,6 +237,6 @@
 	
 	<mx:VBox id="box" width="100%" height="100%" verticalGap="0" />
 	
-	<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | CONNECTION ' + cstatus}" color="#FFFFFF" />
+	<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | LOWEST: ' + lowestFPS + ' | CONNECTION ' + cstatus}" color="#FFFFFF" />
 	
 </mx:WindowedApplication>

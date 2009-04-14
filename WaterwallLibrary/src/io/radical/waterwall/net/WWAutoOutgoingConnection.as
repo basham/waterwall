@@ -30,9 +30,12 @@ package io.radical.waterwall.net {
 		}
 		
 		private function onTimerFrame( event:TimerEvent ):void {
-			if ( sendWaves )
-				//for ( var i:uint = 0; i < 5; i++ )
-					randomWaves();
+			// 3 Waves Max?
+			if ( sendWaves || true ) {
+				randomWaves();
+				randomWaves();
+			}
+
 			if ( sendFill )
 				randomFill();
 		}
@@ -63,7 +66,7 @@ package io.radical.waterwall.net {
 			
 			var x:Number = Math.random();
 			
-			if ( inject )
+			//if ( inject )
 				incoming.dispatchWave( amplitude, x );
 		}
 		
