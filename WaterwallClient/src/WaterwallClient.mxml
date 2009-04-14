@@ -8,6 +8,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import io.radical.waterwall.net.WWAutoOutgoingConnection;
 			import io.radical.waterwall.utils.Log;
 		
 			import edu.iu.vis.utils.Normalize;
@@ -48,17 +49,22 @@
 			private var cstatus:String = 'Connected';
 			private var cs:uint = 0;
 			
+			private var aoc:WWAutoOutgoingConnection;
+			
 			public function init():void{
 				start();
 				incoming = new WWIncomingConnection( "_WWConnection" );
 				incoming.addEventListener( FillEvent.FILL_UPDATE, onFillUpdate );
 				incoming.addEventListener( WaveEvent.WAVE_INJECTION, onWaveInjection );
+				
+				aoc = new WWAutoOutgoingConnection( incoming, 30 );
+				
 				//this.addEventListener(MouseEvent.CLICK, onMouseDown);
 				this.addEventListener(ResizeEvent.RESIZE, onResize);
 				this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 				//this.frameRate = 60;
 				//this.
-				trace( '*', this.frameRate );
+				//trace( '*', this.frameRate );
 				var timer:Timer = new Timer(1000);
 				timer.start();
 				timer.addEventListener( TimerEvent.TIMER, onTimerFPS );
@@ -74,13 +80,16 @@
 			}
 			
 			private function onTimerFPS( e:TimerEvent ):void {
-				trace( '#', f, c, this.stage.frameRate );
+				//trace( '#', f, c, this.stage.frameRate );
 				ff = f;
 				cc = c;
 				f = c = 0;
 				//trace( incoming.connected );
 				incoming.close();
 				incoming.reconnect();
+				
+				aoc.sendWaves = ( ff > 18 );
+				
 				/*
 				if ( ff < 22 ) {
 					incoming.close();
@@ -133,7 +142,7 @@
 				water.fill = bg_water.fill = water2.fill = avgFill;
 				
 				var avgAmp:Number = ampLog.average();
-				trace( "**************", avgFill );
+				//trace( "**************", avgFill );
 				if ( board.isQueueEmpty() ) {
 	
 					if ( board.secondsSinceLastMessage() > 10 && avgFill == 0 )
@@ -309,6 +318,6 @@
 	
 	<mx:VBox id="box" width="100%" height="100%" verticalGap="0" />
 	
-	<!--<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | CONNECTION ' + cstatus}" color="#FFFFFF" />-->
+	<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | CONNECTION ' + cstatus}" color="#FFFFFF" />
 	
 </mx:WindowedApplication>
