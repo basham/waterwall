@@ -31,7 +31,7 @@ package io.radical.waterwall.net {
 		
 		private function onTimerFrame( event:TimerEvent ):void {
 			if ( sendWaves )
-				for ( var i:uint = 0; i < 1; i++ )
+				//for ( var i:uint = 0; i < 5; i++ )
 					randomWaves();
 			if ( sendFill )
 				randomFill();

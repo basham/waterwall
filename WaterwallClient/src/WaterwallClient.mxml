@@ -8,25 +8,23 @@
 
 	<mx:Script>
 		<![CDATA[
-			import io.radical.waterwall.net.WWAutoOutgoingConnection;
-			import io.radical.waterwall.utils.Log;
-		
+
 			import edu.iu.vis.utils.Normalize;
 			
 			import io.radical.waterwall.messaging.WWMessageBoard;
 			import io.radical.waterwall.buoy.Buoy;
-		
 			import io.radical.waterwall.net.WWIncomingConnection;
+			import io.radical.waterwall.net.WWAutoOutgoingConnection;
 			import io.radical.waterwall.events.FillEvent;
 			import io.radical.waterwall.events.WaveEvent;
+			import io.radical.waterwall.water.Water;
+			import io.radical.waterwall.utils.Log;
 			
 			import mx.events.ResizeEvent;
 			import mx.core.UIComponent;
 
 			import flash.events.MouseEvent;
 			import flash.utils.getTimer;
-			
-			import com.electrotank.water.Water;
 			
 			import gs.TweenLite;
 			import gs.easing.*;
@@ -59,7 +57,6 @@
 				
 				aoc = new WWAutoOutgoingConnection( incoming, 30 );
 				
-				//this.addEventListener(MouseEvent.CLICK, onMouseDown);
 				this.addEventListener(ResizeEvent.RESIZE, onResize);
 				this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 				//this.frameRate = 60;
@@ -270,17 +267,6 @@
 			
 			private function onFillUpdate( e:FillEvent ):void {
 				fillLog.push( e.data );
-				//fillLog.unshift( e.data );
-				//while( fillLog.length > fillHistory )
-				//	fillLog.pop();
-				//
-				//var currFill:Number = e.data;
-				//var duration:Number = 5 * Math.abs( currFill - lastFill );
-				//TweenLite.to( water, duration, { fill: currFill, ease: gs.easing.Quad.easeInOut } );
-				//TweenLite.to( bg_water, duration, { fill: currFill, ease: gs.easing.Quad.easeInOut } );
-				//TweenLite.to( water2, duration, { fill: currFill, ease: gs.easing.Quad.easeInOut } );
-				//
-				//lastFill = currFill;
 			}
 			
 			private function onWaveInjection( e:WaveEvent ):void {
@@ -290,23 +276,13 @@
 				bg_water.injectWave( e.amplitude * Math.random(), e.x + ( Math.random() > .5 ? 1 : -1 ) * ( Math.random() * .1 ) );
 			}
 			
-			public function onMouseDown(ev:Event):void {
-				water.injectWave(10, mouseX);
-				water.fill = mouseY / this.height;
+			private function onResize( e:ResizeEvent ):void{
+				water.setSize( this.width, this.height );
+				water2.setSize( this.width, this.height );
+				bg_water.setSize( this.width, this.height );
 			}
 			
-			public function onResize(ev:ResizeEvent):void{
-				var newWidth:Number = this.width;
-				var newHeight:Number = this.height;
-				
-				water.setSize(newWidth, newHeight);
-				water2.setSize( newWidth, newHeight );
-				bg_water.setSize( newWidth, newHeight );
-				//water.fill = ( this.width  % 1000 ) / 1000;
-				//water.fill = .9;
-			}
-			
-			public function addDisplayObject( child:DisplayObject ):void {
+			private function addDisplayObject( child:DisplayObject ):void {
 				var uic:UIComponent = new UIComponent();
 				uic.addChild(child);
 				box.addChild(uic);	
