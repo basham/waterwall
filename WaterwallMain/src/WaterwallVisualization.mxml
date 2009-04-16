@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Window
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	layout="vertical" width="1024" height="768" showStatusBar="false"
+	paddingBottom="0" paddingLeft="0" paddingTop="0" paddingRight="0" frameRate="30"
+	creationComplete="init()">
+
+<!--backgroundGradientColors="[0xD0E8FF, 0xFFFFFF]"-->
+<!--applicationComplete="appComplete()"-->
+
+	<mx:Script>
+		<![CDATA[
+
+			import edu.iu.vis.utils.Normalize;
+			
+			import io.radical.waterwall.messaging.MessageTypes;
+			import io.radical.waterwall.messaging.WWMessageBoard;
+			import io.radical.waterwall.buoy.Buoy;
+			import io.radical.waterwall.net.WWIncomingConnection;
+			import io.radical.waterwall.net.WWAutoOutgoingConnection;
+			import io.radical.waterwall.events.FillEvent;
+			import io.radical.waterwall.events.WaveEvent;
+			import io.radical.waterwall.water.Water;
+			import io.radical.waterwall.utils.Log;
+			
+			import mx.events.ResizeEvent;
+			import mx.core.UIComponent;
+
+			import flash.events.MouseEvent;
+			import flash.utils.getTimer;
+
+			private var water:Water;
+			private var water2:Water;
+			private var bg_water:Water;
+			[Bindable]
+			private var incoming:WWIncomingConnection;
+			private var buoy:Buoy;
+			
+			private var board:WWMessageBoard = new WWMessageBoard();
+			
+			private var messageId:uint = 0;
+			private var messages:Array = new Array();
+			
+			[Bindable]
+			private var fps:Number = 0;
+			[Bindable]
+			private var lowestFPS:uint = 0;
+			[Bindable]
+			private var cstatus:String = 'Connected';
+			private var cs:uint = 0;
+			
+			private var aoc:WWAutoOutgoingConnection;
+			
+			private var lastFill:Number = 0;
+			private var fillLog:Log = new Log( 50 );
+			
+			
+			[Bindable]
+			private var ff:uint = 0;
+			private var f:uint = 0;
+			[Bindable]
+			private var cc:uint = 0;
+			private var c:uint = 0;
+			
+			private var ampLog:Log = new Log( 50 );
+			
+			private var gt:uint = 0;
+			
+			public function init():void{
+				
+				bg_water = new Water( this.width, this.height );
+				bg_water.colors = [ 0xB0DAFF, 0xB0DAFF, 0xB0DAFF ];
+				water2 = new Water( this.width, this.height );
+				water2.colors = [ 0xDAEEFF, 0xDAEEFF, 0xDAEEFF ];
+				water = new Water( this.width, this.height );
+				water.colors = [ 0x3285B4, 0x3285B4, 0x3285B4 ];
+				
+				var buoyWidth:Number = 20;
+				buoy = new Buoy( buoyWidth );
+				buoy.anchorX = this.width / 2;
+				buoy.borderRadius = this.width * .3;
+				board.dynamicAnchor( buoy, buoyWidth * .5, - buoyWidth * .25 );
+				water2.addFloatingItem( buoy );
+				
+				addDisplayObject(board);
+				addDisplayObject(water2);
+				addDisplayObject(bg_water);
+				addDisplayObject(water);
+				
+				//var t:Timer = new Timer( 5000 );
+				//t.start();
+				//t.addEventListener(TimerEvent.TIMER, onTimer);
+				
+				incoming = new WWIncomingConnection( "_WWConnection" );
+				incoming.addEventListener( FillEvent.FILL_UPDATE, onFillUpdate );
+				incoming.addEventListener( WaveEvent.WAVE_INJECTION, onWaveInjection );
+				
+				//aoc = new WWAutoOutgoingConnection( incoming, 30 );
+				
+				this.addEventListener( ResizeEvent.RESIZE, onResize );
+				this.addEventListener( Event.ENTER_FRAME, onEnterFrame );
+				//this.frameRate = 60;
+				//this.
+				//trace( '*', this.frameRate );
+				var timer:Timer = new Timer(1000);
+				timer.start();
+				timer.addEventListener( TimerEvent.TIMER, onTimerFPS );
+				
+				var t:Timer = new Timer(1000 / 30);
+				t.start();
+				t.addEventListener( TimerEvent.TIMER, onTimerSteadyFPS );
+			}
+			
+			private function appComplete():void {
+				fullScreen();
+				this.stage.frameRate = 30;
+			}
+			
+			private function onTimerFPS( e:TimerEvent ):void {
+				//trace( '#', f, c, this.stage.frameRate );
+				ff = f;
+				cc = c;
+				f = c = 0;
+				//trace( incoming.connected );
+				//incoming.close();
+				//incoming.reconnect();
+				if ( ff < lowestFPS || lowestFPS == 0 )
+					lowestFPS = ff;
+					
+				//aoc.sendWaves = ( ff > 18 );
+				
+				/*
+				if ( ff < 22 ) {
+					incoming.close();
+					//trace( incoming.connected );
+					cstatus = 'Closed';
+				}
+				else if ( ff >= 30 && !incoming.connected ) {
+					incoming.reconnect();
+					cs++;
+					cstatus = 'Reconnected ' + cs;
+				}
+				*/
+				//if ( ff == 30 ) {
+				//	this.stage.frameRate = 60;
+				//}
+				//f %= this.frameRate;
+			}
+			
+			private function onTimerSteadyFPS( e:TimerEvent ):void {
+				c++;
+				var g:uint = flash.utils.getTimer();
+				//trace( '$', g - gt );
+				gt = g;
+				//trace( '$', c, cc );
+				//cc = c;
+				//c = 0;
+				//if ( cc == 30 ) {
+				//	this.stage.frameRate = 60;
+				//}
+				//f %= this.frameRate;
+			}
+			
+			[Bindable]
+			private var aa:Number = 0;
+			[Bindable]
+			private var af:Number = 0;
+			
+			private function onEnterFrame(e:Event):void {
+				f++;
+				//c++;
+				//trace( this.frameRate );
+				//fps = this.frameRate;
+				var latestFill:Number = fillLog.length > 0 ? fillLog.index(0) : 0;
+				fillLog.push( latestFill );
+				var avgFill:Number = fillLog.average();
+				water.fill = bg_water.fill = water2.fill = avgFill;
+				
+				var latestAmp:Number = ampLog.length > 0 ? ampLog.index(0) : 0;
+				ampLog.push( latestAmp * .95 );
+				var avgAmp:Number = ampLog.average();
+				//trace( "**************", avgFill );
+				
+				aa = Number( avgAmp.toFixed( 3 ) );
+				af = Number( avgFill.toFixed( 3 ) );
+				
+				if ( board.isQueueEmpty() ) {
+	
+					if ( board.secondsSinceLastMessage() > 10 ) {
+						if ( avgFill == 0 )
+							message( MessageTypes.EMPTY );
+						else if ( avgFill < .06 && avgFill > 0 )
+							message( MessageTypes.FEW );
+					}
+					
+					if ( board.secondsSinceLastMessage() > 5 && avgAmp > 6 )
+						message( MessageTypes.STRONG_AMPLITUDE );
+					
+					if ( board.secondsSinceLastMessage() > 25 )
+						message( MessageTypes.AGNOSTIC );
+				}
+			}
+			
+			private function message( messageType:String ):void {
+				queue( MessageTypes.RandomMessage( messageType ) );
+			}
+			
+			private function onTimer( event:TimerEvent ):void {
+				queue( messages[ messageId++ ] as String );
+				messageId = messageId % messages.length;
+			}
+			
+			private function queue( message:String ):void {
+				trace( "&&&&&&&", message );
+				board.queue( message );
+			}
+			
+			private function fullScreen():void {
+				this.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+			}
+			
+			private function onFillUpdate( e:FillEvent ):void {
+				fillLog.push( e.data );
+			}
+			
+			private function onWaveInjection( e:WaveEvent ):void {
+				ampLog.push( e.amplitude );
+				water.injectWave( e.amplitude, e.x );
+				water2.injectWave( e.amplitude * Math.random(), e.x + ( Math.random() > .5 ? 1 : -1 ) * ( Math.random() * .1 ) );
+				bg_water.injectWave( e.amplitude * Math.random(), e.x + ( Math.random() > .5 ? 1 : -1 ) * ( Math.random() * .1 ) );
+			}
+			
+			private function onResize( e:ResizeEvent ):void{
+				water.setSize( this.width, this.height );
+				water2.setSize( this.width, this.height );
+				bg_water.setSize( this.width, this.height );
+			}
+			
+			private function addDisplayObject( child:DisplayObject ):void {
+				var uic:UIComponent = new UIComponent();
+				uic.addChild(child);
+				box.addChild(uic);	
+			}
+
+		]]>
+	</mx:Script>
+	
+	
+	<mx:VBox id="box" width="100%" height="100%" verticalGap="0" />
+	
+	<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | LOWEST: ' + lowestFPS + ' | AMP: ' + aa + ' | FILL: ' + af + ' | CONNECTION ' + cstatus}" color="#FFFFFF" />
+	
+</mx:Window>
