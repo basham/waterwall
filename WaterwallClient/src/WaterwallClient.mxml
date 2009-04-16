@@ -26,9 +26,6 @@
 
 			import flash.events.MouseEvent;
 			import flash.utils.getTimer;
-			
-			import gs.TweenLite;
-			import gs.easing.*;
 
 			private var water:Water;
 			private var water2:Water;
@@ -96,7 +93,7 @@
 				incoming.addEventListener( FillEvent.FILL_UPDATE, onFillUpdate );
 				incoming.addEventListener( WaveEvent.WAVE_INJECTION, onWaveInjection );
 				
-				aoc = new WWAutoOutgoingConnection( incoming, 30 );
+				//aoc = new WWAutoOutgoingConnection( incoming, 30 );
 				
 				this.addEventListener( ResizeEvent.RESIZE, onResize );
 				this.addEventListener( Event.ENTER_FRAME, onEnterFrame );
@@ -128,7 +125,7 @@
 				if ( ff < lowestFPS || lowestFPS == 0 )
 					lowestFPS = ff;
 					
-				aoc.sendWaves = ( ff > 18 );
+				//aoc.sendWaves = ( ff > 18 );
 				
 				/*
 				if ( ff < 22 ) {
@@ -162,6 +159,11 @@
 				//f %= this.frameRate;
 			}
 			
+			[Bindable]
+			private var aa:Number = 0;
+			[Bindable]
+			private var af:Number = 0;
+			
 			private function onEnterFrame(e:Event):void {
 				f++;
 				//c++;
@@ -172,18 +174,25 @@
 				var avgFill:Number = fillLog.average();
 				water.fill = bg_water.fill = water2.fill = avgFill;
 				
+				var latestAmp:Number = ampLog.length > 0 ? ampLog.index(0) : 0;
+				ampLog.push( latestAmp * .95 );
 				var avgAmp:Number = ampLog.average();
 				//trace( "**************", avgFill );
+				
+				aa = Number( avgAmp.toFixed( 3 ) );
+				af = Number( avgFill.toFixed( 3 ) );
+				
 				if ( board.isQueueEmpty() ) {
 	
-					if ( board.secondsSinceLastMessage() > 10 && avgFill == 0 )
-						message( MessageTypes.EMPTY );
-						
+					if ( board.secondsSinceLastMessage() > 10 ) {
+						if ( avgFill == 0 )
+							message( MessageTypes.EMPTY );
+						else if ( avgFill < .06 && avgFill > 0 )
+							message( MessageTypes.FEW );
+					}
+					
 					if ( board.secondsSinceLastMessage() > 5 && avgAmp > 6 )
 						message( MessageTypes.STRONG_AMPLITUDE );
-						
-					if ( board.secondsSinceLastMessage() > 10 && avgFill < .06 && avgFill > 0 )
-						message( MessageTypes.FEW );
 					
 					if ( board.secondsSinceLastMessage() > 25 )
 						message( MessageTypes.AGNOSTIC );
@@ -237,6 +246,6 @@
 	
 	<mx:VBox id="box" width="100%" height="100%" verticalGap="0" />
 	
-	<mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | LOWEST: ' + lowestFPS + ' | CONNECTION ' + cstatus}" color="#FFFFFF" />
+	<!-- <mx:Label text="{'FPS: ' + ff + ' | CONST: ' + cc + ' | LOWEST: ' + lowestFPS + ' | AMP: ' + aa + ' | FILL: ' + af + ' | CONNECTION ' + cstatus}" color="#FFFFFF" /> -->
 	
 </mx:WindowedApplication>

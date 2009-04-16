@@ -13,13 +13,13 @@
 			import mx.charts.renderers.DiamondItemRenderer;
 		
 			import io.radical.waterwall.net.WWOutgoingConnection;
-			import io.radical.waterwall.utils.Normalize;
 		
 			import edu.iu.vis.tracking.MotionTracking;
 			import edu.iu.vis.tracking.Region;
 			import edu.iu.vis.tracking.RegionAdjacencyGraph;
 			import edu.iu.vis.utils.ColorUtil;
 			import edu.iu.vis.utils.NumberUtil;
+			import edu.iu.vis.utils.Normalize;
 			
 			[Bindable]
 			private var w:Number = 320;
@@ -207,40 +207,6 @@
 					outgoing.sendFill( fill );
 					
 				fillSlider.value = fill * 100;
-			}
-			
-			private function calculateFills( rag:RegionAdjacencyGraph ):void {
-				
-				if ( !sendFillCheckbox.selected )
-					return;
-				
-				if ( fillOverride.selected ) {
-					outgoing.sendFill( fillSlider.value / 100 );
-					return;
-				}
-					
-				//if ( frame % 15 != 0 )
-				//	return;
-				
-				var surfaceArea:Number = 0;
-				var totalSurfaceArea:Number = w * h;
-				
-				for each( var r:Region in rag.regions )
-					if ( !r.bit )
-						surfaceArea += r.bounds.width * r.bounds.height;
-						
-				var fill:Number = ( surfaceArea / totalSurfaceArea );
-				
-				fillLog.unshift( fill );
-				while( fillLog.length > fillHistorySlider.value )
-					fillLog.pop();
-				
-				var avgFill:Number = Normalize.Average( fillLog, Normalize.LINEAR );
-				
-				if ( sendFillCheckbox.selected )
-					outgoing.sendFill( avgFill );
-					
-				fillSlider.value = avgFill * 100;
 			}
 			
 			private function randomWaves():void {
