@@ -3,15 +3,15 @@
 	xmlns:mx="http://www.adobe.com/2006/mxml"
 	layout="vertical" width="1045" height="600" backgroundColor="#DDDDDD"
 	paddingTop="10" paddingBottom="10" paddingLeft="20" paddingRight="20" frameRate="30"
-	status="Server FPS: {ff} | Camera FPS: {fps}"
-	creationComplete="init()">
+	status="Server FPS: {ff} | Camera FPS: {fps} | Client FPS: {client.ff} | Client Lowest FPS: {client.lowestFPS} | Avg Fill: {client.af} | Avg Amplitude: {client.aa}" 
+	creationComplete="init()" closing="closing()">
 
 
 	<mx:Script>
 		<![CDATA[
 		
-			import mx.charts.renderers.DiamondItemRenderer;
-		
+			import io.radical.waterwall.events.WaveEvent;
+			import io.radical.waterwall.events.FillEvent;
 			import io.radical.waterwall.net.WWOutgoingConnection;
 		
 			import edu.iu.vis.tracking.MotionTracking;
@@ -42,6 +42,10 @@
 	   		
 	   		private var fillLog:Array = new Array();
 	   		
+	   		[Bindable]
+			private var client:WaterwallClient = new WaterwallClient();
+			
+			
 			private function init():void {
 				setupTracker();
 				camera();
@@ -53,8 +57,12 @@
 				timer.addEventListener( TimerEvent.TIMER, onTimerFPS );
 			}
 			
+			private function closing():void {
+				client.close();
+			}
+			
 			private function onTimerFPS( e:TimerEvent ):void {
-				trace( '%', f, this.frameRate );
+				//trace( '%', f, this.frameRate );
 				ff = f;
 				f = 0;
 				//f %= this.frameRate;
@@ -146,8 +154,8 @@
 				tracker.motionTrack( camData );
 				var rag:RegionAdjacencyGraph = tracker.graph();
 				
-				var motionWaves:Dictionary = new Dictionary(true);
-				var active:Boolean = false;
+				//var motionWaves:Dictionary = new Dictionary(true);
+				//var active:Boolean = false;
 				
 				for each( var r:Region in rag.regions ) {
 					if ( !r.bit ) {
@@ -160,14 +168,11 @@
 						var ampHigh:Number = amplitudeRange[1];
 						var amplitude:Number = perc * ( ampHigh - ampLow ) + ampLow;
 						
-						motionWaves[ y / h ] = amplitude;
-						//trace( '$', y / h, amplitude );
-						active = true;
+						//motionWaves[ y / h ] = amplitude;
+						
+						client.dispatchEvent( new WaveEvent( amplitude, y / h ) );
 					}
 				}
-
-				if ( active )
-					outgoing.sendWaveSeries( motionWaves );
 			}
 			
 			private function calculateFill():void {
@@ -176,8 +181,7 @@
 					return;
 				
 				if ( fillOverride.selected ) {
-					outgoing.sendFill( fillSlider.value / 100 );
-					//trace( '%', fillSlider.value );
+					client.dispatchEvent( new FillEvent( fillSlider.value / 100 ) );
 					return;
 				}
 				
@@ -195,16 +199,8 @@
 				var averageColor:uint = ColorUtil.AverageColor( data );
 				var fill:Number = ColorUtil.HexToLightness( averageColor );
 				
-				//trace( '#', averageColor.toString(16), fill );
-				/*
-				fillLog.unshift( fill );
-				while( fillLog.length > fillHistorySlider.value )
-					fillLog.pop();
-				
-				var avgFill:Number = Normalize.Average( fillLog, Normalize.LINEAR );
-				*/
 				if ( sendFillCheckbox.selected )
-					outgoing.sendFill( fill );
+					client.dispatchEvent( new FillEvent( fill ) );
 					
 				fillSlider.value = fill * 100;
 			}
@@ -236,14 +232,12 @@
 				var x:Number = Math.random();
 				
 				if ( inject && sendRandomCheckbox.selected )
-					outgoing.sendWave( amplitude, x );
+					client.dispatchEvent( new WaveEvent( amplitude, x ) );
 			}
 			
-			private var client:WaterwallVisualization;
-			
 			private function launchClient():void {
-				client = new WaterwallVisualization();
 				client.open();
+				client.move( -1000, 0 );
 			}
 			
 		]]>

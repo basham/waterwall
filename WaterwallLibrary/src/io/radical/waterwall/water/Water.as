@@ -160,9 +160,11 @@
 		 * ===============================================================*/	
 		 
 		private function onEnterFrame( event:Event ):void {
-			propogateWaves();
-			moveFloatingItems();
-			renderWater();
+			try {
+				propogateWaves();
+				moveFloatingItems();
+				renderWater();
+			} catch( e:Error ) { }
 		}
 
 		private function propogateWaves():void {
