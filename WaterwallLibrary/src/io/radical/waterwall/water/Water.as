@@ -80,6 +80,10 @@
 			_fill = NumberUtil.CleanPercentage( value );
 		}
 		
+		public function get waterShape():Shape {
+			return shape;
+		}
+		
 		
 		/* ===============================================================
 		 * PUBLIC FUNCTIONS
