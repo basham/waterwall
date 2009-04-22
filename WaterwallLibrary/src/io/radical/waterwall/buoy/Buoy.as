@@ -52,6 +52,10 @@ package io.radical.waterwall.buoy {
 			movingPoint.borderRadius = value;
 		}
 		
+		public function set shift( value:Number ):void {
+			movingPoint.shift = value;
+		}
+		
 		private function render():void {
 			base.graphics.beginFill( 0xFF4D4D );
 			base.graphics.drawRect( 0, 0, 15, 15 );

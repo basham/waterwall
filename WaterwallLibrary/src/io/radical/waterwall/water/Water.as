@@ -30,8 +30,8 @@
 		private var _waterWidth:Number;
 		private var _fill:Number;
 		
-		private var maxFill:Number = .9;
-		private var minFill:Number = .05;
+		public var maxFill:Number = 1;
+		public var minFill:Number = 0;
 		
 		public var colors:Array = [  0x009CE5, 0x006699, 0x00131C ];
 		

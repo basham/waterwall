@@ -59,6 +59,9 @@
 				water2.colors = [ 0xDAEEFF, 0xDAEEFF, 0xDAEEFF ];
 				water = new Water( this.width, this.height );
 				water.colors = [ 0x3285B4, 0x3285B4, 0x3285B4 ];
+				
+				bg_water.maxFill = water2.maxFill = water.maxFill = .9;
+				bg_water.minFill = water2.minFill = water.minFill = .05;
 				 
 				var buoyWidth:Number = 20;
 				buoy = new Buoy( buoyWidth );

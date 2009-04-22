@@ -2,41 +2,32 @@ package {
 
 	import flash.display.Shape;
 	import flash.display.Sprite;
-	import flash.events.TimerEvent;
-	import flash.text.TextField;
-	import flash.text.TextFieldAutoSize;
-	import flash.text.TextFormat;
-	import flash.utils.Timer;
+	import flash.events.Event;
 	
 	import io.radical.waterwall.buoy.Buoy;
 	import io.radical.waterwall.messaging.WWMessageBoard;
 	import io.radical.waterwall.water.Water;
 
-	[SWF(width="300", height="100", frameRate="30", backgroundColor="#FFFFFF")]
+	[SWF(width="300", height="80", frameRate="30", backgroundColor="#FFFFFF")]
 	public class WaterwallLogo extends Sprite {
 		
 		private const W:uint = 300;
-		private const H:uint = 100;
-		private const FRAME_RATE:uint = 30;
-		
-		private const TEXT_SIZE:uint = 60;
-		private const FILL:Number = .45;
+		private const H:uint = 80;
+		private const FILL:Number = .55;
 		
 		private var sendWaves:Boolean = true;
-		private var ampLow:uint = 1; // 1
-		private var ampHigh:uint = 2; // 5
+		private var ampLow:Number = .5; // 1
+		private var ampHigh:Number = 1.5; // 5
 		private var freqLow:uint = 50; // 2
 		private var freqHigh:uint = 50; // 2
 		
 		private var buoy:Buoy;
 		private var board:WWMessageBoard;
 		private var water:Water;
-		private var timerFrame:Timer;
+		private var logo:Sprite;
 		
-		[Embed(source="../assets/Arial Rounded Bold.ttf",
-		fontWeight="Regular", fontName="messageFont",
-		mimeType='application/x-font')]
-		private var font:Class;
+		[Embed(source="../assets/logo_text.swf")]
+		private var logoSWF:Class;
 		
 		public function WaterwallLogo() {
 			
@@ -44,6 +35,8 @@ package {
 			buoy = new Buoy( buoyWidth );
 			buoy.anchorX = W / 2;
 			buoy.borderRadius = W * .3;
+			buoy.y = H / 2;
+			buoy.shift = .2;
 				
 			board = new WWMessageBoard();
 			board.dynamicAnchor( buoy, buoyWidth * .5, - buoyWidth * .25 );
@@ -51,39 +44,24 @@ package {
 			water = new Water( W, H, FILL );
 			water.addFloatingItem( buoy );
 			
-			var format:TextFormat = new TextFormat();
-			format.font = "messageFont";
-			format.color = 0x86B7DA;
-			format.size = TEXT_SIZE;
+			logo = new logoSWF() as Sprite;
+			logo.scaleX = logo.scaleY = W / logo.width;
+			logo.y = H - logo.height;
+			logo.mask = water.waterShape;
 			
-			var logoField:TextField = new TextField();
-			logoField.embedFonts = true;
-			logoField.selectable = false;
-			logoField.text = "waterwall";
-			logoField.autoSize = TextFieldAutoSize.LEFT;
-			logoField.setTextFormat( format );
-			logoField.x = ( W - logoField.width ) / 2;
-			logoField.y = H - logoField.height;
-			logoField.mask = water.waterShape;
-			
-			var s:Shape = new Shape();
-			s.graphics.beginFill( 0x324C59 );
-			s.graphics.drawRect( 0, 0, W, H );
-			s.graphics.endFill();
+			//var s:Shape = new Shape();
+			//s.graphics.beginFill( 0x324C59 );
+			//s.graphics.drawRect( 0, 0, W, H );
+			//s.graphics.endFill();
 
-			this.addChild( s );
+			//this.addChild( s );
 			this.addChild( water );
-			this.addChild( logoField );
+			this.addChild( logo );
 
-			
-			
-			
-			timerFrame = new Timer( 1000 / FRAME_RATE );
-			timerFrame.start();
-			timerFrame.addEventListener( TimerEvent.TIMER, onTimerFrame );
+			this.addEventListener( Event.ENTER_FRAME, onEnterFrame );
 		}
 
-		private function onTimerFrame( event:TimerEvent ):void {
+		private function onEnterFrame( event:Event ):void {
 			if ( sendWaves )
 				randomWaves();
 		}
