@@ -52,9 +52,14 @@
 				setupScreen();
 				outgoing = new WWOutgoingConnection( "_WWConnection" );
 				addEventListener(Event.ENTER_FRAME, onFrame);
+				
 				var timer:Timer = new Timer(1000);
 				timer.start();
 				timer.addEventListener( TimerEvent.TIMER, onTimerFPS );
+				
+				var camTimer:Timer = new Timer( 1000 / 10 );
+				camTimer.start();
+				camTimer.addEventListener( TimerEvent.TIMER, onCamTimer );
 			}
 			
 			private function closing():void {
@@ -104,22 +109,31 @@
 				var bmp3:Bitmap = new Bitmap();
 				bmp3.bitmapData = keyer.filteredBitmapData;
 				img03.source = bmp3;
+				
+				var bmp4:Bitmap = new Bitmap();
+				bmp4.bitmapData = keyer.filteredBitmapData;
+				img04.source = bmp4;
 			}
-	
+
+			private var trackingBitmapData:BitmapData;
+			
 			private function onFrame( event:Event ):void {
 				f++;
 				if ( paused )
 					return;
-				trackingUpdate();
+				frame++;
 				fps = cam.currentFPS;
 			}
+			
 			private var frame:uint = 0;
-			private function trackingUpdate():void {
+			
+			private function onCamTimer( event:Event ):void {
+				if ( paused )
+					return;
 				camData.draw( video );
 				calculateMotionWaves();
 				calculateFill();
 				randomWaves();
-				frame++;
 			}
 			
 			private function key():void {
@@ -154,9 +168,6 @@
 				tracker.motionTrack( camData );
 				var rag:RegionAdjacencyGraph = tracker.graph();
 				
-				//var motionWaves:Dictionary = new Dictionary(true);
-				//var active:Boolean = false;
-				
 				for each( var r:Region in rag.regions ) {
 					if ( !r.bit ) {
 						
@@ -167,8 +178,6 @@
 						var ampLow:Number = amplitudeRange[0];
 						var ampHigh:Number = amplitudeRange[1];
 						var amplitude:Number = perc * ( ampHigh - ampLow ) + ampLow;
-						
-						//motionWaves[ y / h ] = amplitude;
 						
 						client.dispatchEvent( new WaveEvent( amplitude, y / h ) );
 					}
@@ -203,6 +212,9 @@
 					client.dispatchEvent( new FillEvent( fill ) );
 					
 				fillSlider.value = fill * 100;
+				
+				if ( fill == 0 && autoKey.selected )
+					keyer.key();
 			}
 			
 			private function randomWaves():void {
@@ -295,6 +307,7 @@
 			<mx:Label text="Motion" fontSize="14" />
 			
 			<mx:Image id="img02" width="{w}" height="{h}" />
+			<mx:Image id="img04" width="{w}" height="{h}" />
 			
 			<mx:VBox width="100%">
 				
@@ -355,6 +368,7 @@
 				<mx:FormItem label="Fill" width="100%" labelWidth="80">
 					<mx:HSlider id="fillSlider" width="100%" minimum="0" maximum="100" tickInterval="10" labels="['0%', '100%']" showTrackHighlight="true" />
 					<mx:CheckBox id="fillOverride" label="Override" selected="false" />
+					<mx:CheckBox id="autoKey" label="Auto Key" selected="true" />
 				</mx:FormItem>
 				
 			</mx:VBox>
