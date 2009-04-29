@@ -60,6 +60,8 @@
 				water = new Water( this.width, this.height );
 				water.colors = [ 0x3285B4, 0x3285B4, 0x3285B4 ];
 				
+				bg_water.alpha = water2.alpha = water.alpha = .6;
+				
 				bg_water.maxFill = water2.maxFill = water.maxFill = .9;
 				bg_water.minFill = water2.minFill = water.minFill = .05;
 				 

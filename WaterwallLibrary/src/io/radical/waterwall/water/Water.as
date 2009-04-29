@@ -245,17 +245,17 @@
 		
 		private function moveFloatingItems():void {
 			
-			var g:Number = .25;
+			var gravity:Number = .25;
+			var friction:Number = .85
+			var margin:Number = 4; // # of dots to average
+			var x:Number = Math.round(this.width / 2);
+			var index:Number = Math.floor(x/spacing) - margin/2;
 			
 			for ( var j:uint = 0; j < floatingItems.length; ++j ) {
 				
 				var fi:FloatingItem = floatingItems[j];
 				var dob:DisplayObject = fi.displayObject;
-				var d:Number = .9;
-				var x:Number = Math.round(this.width / 2);
-				//dob.x = x;
-				var margin:Number = 4;
-				var index:Number = Math.floor(x/spacing) - margin/2;
+			
 				var y:Number = 0;
 				var ang:Number = 0;
 				
@@ -264,19 +264,24 @@
 					if ( i != index )
 						ang += Math.atan2(dots[i].y-dots[i-1].y, dots[i].x-dots[i-1].x);
 				}
-				
-				fi.yVelocity += g;
-				dob.y += fi.yVelocity;
-				y /= margin;
+
+				y /= margin; // Average y water-level coordinate
 				y -= dob.height * .85;
 				
 				if ( dob.y >= y ) {
-					dob.y = y;
-					fi.yVelocity *= .4;
+					fi.yVelocity -= gravity;
+					if ( fi.yVelocity > 0 )
+						fi.yVelocity *= friction;
 					var k:Number = .3;
 					dob.rotation += ((ang/margin)*180/Math.PI-dob.rotation)*k;
 				}
-				//trace( '@', fi.yVelocity, dob.y );
+				else {
+					fi.yVelocity += gravity;
+					if ( fi.yVelocity < 0 )
+						fi.yVelocity *= friction;
+				}
+				
+				dob.y += fi.yVelocity;
 			}
 		}
 		
