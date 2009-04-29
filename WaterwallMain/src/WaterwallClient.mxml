@@ -9,6 +9,7 @@
 
 	<mx:Script>
 		<![CDATA[
+			import io.radical.waterwall.environment.Sky;
 
 			import edu.iu.vis.utils.Normalize;
 			
@@ -28,6 +29,7 @@
 			import flash.events.MouseEvent;
 			import flash.utils.getTimer;
 
+			private var sky:Sky;
 			private var water:Water;
 			private var water2:Water;
 			private var bg_water:Water;
@@ -53,6 +55,8 @@
 			
 			public function init():void {
 				
+				sky = new Sky( this.width, this.height );
+				
 				bg_water = new Water( this.width, this.height );
 				bg_water.colors = [ 0xB0DAFF, 0xB0DAFF, 0xB0DAFF ];
 				water2 = new Water( this.width, this.height );
@@ -75,6 +79,7 @@
 				
 				water2.addFloatingItem( buoy );
 				
+				addDisplayObject( sky );
 				addDisplayObject( board );
 				addDisplayObject( water2 );
 				addDisplayObject( bg_water );
@@ -162,6 +167,7 @@
 				water.setSize( w, h );
 				water2.setSize( w, h );
 				bg_water.setSize( w, h );
+				sky.setSize( w, h );
 			}
 			
 			private function addDisplayObject( child:DisplayObject ):void {

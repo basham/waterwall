@@ -251,24 +251,23 @@
 			var x:Number = Math.round(this.width / 2);
 			var index:Number = Math.floor(x/spacing) - margin/2;
 			
+			var y:Number = 0;
+			var ang:Number = 0;
+			
+			for ( var i:uint = index; i < index + margin; ++i ) {
+				y += dots[i].y;
+				if ( i != index )
+					ang += Math.atan2(dots[i].y-dots[i-1].y, dots[i].x-dots[i-1].x);
+			}
+			
+			y /= margin; // Average y water-level coordinate
+			
 			for ( var j:uint = 0; j < floatingItems.length; ++j ) {
 				
 				var fi:FloatingItem = floatingItems[j];
 				var dob:DisplayObject = fi.displayObject;
-			
-				var y:Number = 0;
-				var ang:Number = 0;
 				
-				for ( var i:uint = index; i < index + margin; ++i ) {
-					y += dots[i].y;
-					if ( i != index )
-						ang += Math.atan2(dots[i].y-dots[i-1].y, dots[i].x-dots[i-1].x);
-				}
-
-				y /= margin; // Average y water-level coordinate
-				y -= dob.height * .85;
-				
-				if ( dob.y >= y ) {
+				if ( dob.y >= y - dob.height * .85 ) {
 					fi.yVelocity -= gravity;
 					if ( fi.yVelocity > 0 )
 						fi.yVelocity *= friction;
