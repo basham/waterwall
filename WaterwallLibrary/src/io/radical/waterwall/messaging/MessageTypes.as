@@ -24,7 +24,7 @@ package io.radical.waterwall.messaging {
 			
 		private static var agnosticMessages:Array = [
 			"Why are fish so smart?\rBecause they live in schools!",
-			//"What do you call a fish with no eyes?\rFsh!",
+			"What do you call a fish with no eyes?\rFsh!",
 			"Why do all pirates have eyepatches?\rChuck Norris" ];
 			
 		private static var fewMessages:Array = [
