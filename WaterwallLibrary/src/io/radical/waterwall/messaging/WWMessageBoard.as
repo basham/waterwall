@@ -177,7 +177,7 @@ package io.radical.waterwall.messaging {
 
 			activeQueueLength++;
 			duration = duration == -1 ? message.length * .15 : duration;
-			duration = duration < 1 ? 1 : duration; // Min length a message can be displayed
+			duration = duration < 2 ? 2 : duration; // Min length a message can be displayed
 			messageQueue.push( new WWMessage( message, duration ) );
 			
 			if ( state == HIDDEN ) {

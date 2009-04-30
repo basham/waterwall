@@ -18,6 +18,7 @@ package io.radical.waterwall.messaging {
 			"It sure is lonely over here..." ];
 			
 		private static var strongAmpMessages:Array = [
+			"ok",
 			"Surf's up!",
 			"Slow down there, tiger!",
 			"I'm gonna be sick..." ];
