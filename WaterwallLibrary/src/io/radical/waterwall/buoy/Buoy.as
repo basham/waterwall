@@ -13,9 +13,10 @@ package io.radical.waterwall.buoy {
 	import gs.TweenLite;
 	import gs.easing.*;
 	
+	import io.radical.waterwall.float.FloatingSprite;
 	import io.radical.waterwall.messaging.WWMovingPoint;
 
-	public class Buoy extends Sprite {
+	public class Buoy extends FloatingSprite {
 		
 		private const NORMAL_STATE:uint = 0;
 		private const LOCKED_STATE:uint = 1;
@@ -25,46 +26,58 @@ package io.radical.waterwall.buoy {
 
 		private var buoy:Sprite;
 		private var base:Shape = new Shape();
-		private var light:Shape = new Shape();
+		private var light:Sprite = new Sprite();
 		
 		private var movingPoint:WWMovingPoint;
 		
 		private var lightState:uint = NORMAL_STATE;
 		
+		private var blinkDuration:Number = 0;
+		private var blinkFadeDuration:Number = 0;
+		private var blinkTimer:Timer;
+		
 		public function Buoy( width:Number = 30 ) {
 			
 			super();
+			
+			this.buoyancy = .7;
 			
 			buoy = new buoySWF() as Sprite;
 			
 			var scale:Number = width / buoy.width;
 			buoy.scaleX = buoy.scaleY = scale;
 			
-			drawLight( width * 1 );
-			light.x = light.y = width / 2;
-			//light.alpha = .5;
+			drawLight( width * .5 );
+			light.x = width / 2;
+			light.alpha = 0;
 			
 			movingPoint = new WWMovingPoint();
-			
+
 			this.addChild( buoy );
 			this.addChild( light );
 			
 			this.addEventListener( Event.ENTER_FRAME, onEnterFrame );
 			
-			
-			var t:Timer = new Timer( 4000 );
-			t.start();
-			t.addEventListener( TimerEvent.TIMER, onTimer );
-		}
-		
-		private function onTimer( event:Event ):void {
-			blink(4);
+			blinker( 0, 1, .5 ); // Medium pace
+			//blinker( .1, .1, 0 ); // Really fast
 		}
 		
 		private function onEnterFrame( event:Event ):void {
 			movingPoint.x = this.x;
 			movingPoint.animate();
 			this.x = movingPoint.x;
+		}
+		
+		public function blinker( pause:Number = 1, duration:Number = 1, fadeDuration:Number = 1 ):void {
+			this.blinkDuration = duration;
+			this.blinkFadeDuration = fadeDuration;
+			blinkTimer = new Timer( 1000 * ( duration + fadeDuration * 2 + pause ) );
+			blinkTimer.start();
+			blinkTimer.addEventListener( TimerEvent.TIMER, onBlinkTimer );
+		}
+		
+		private function onBlinkTimer( event:Event ):void {
+			blink( blinkDuration, blinkFadeDuration );
 		}
 		
 		public function set anchorX( value:Number ):void {
@@ -85,13 +98,12 @@ package io.radical.waterwall.buoy {
 				return;
 			
 			lightState = LOCKED_STATE;
-			trace( 'BLINKING' );
+
 			TweenLite.to( light, fadeDuration, { alpha: 1, ease: Back.easeIn } );
-			TweenLite.to( light, fadeDuration, { alpha: 0, ease: Back.easeOut, delay: fadeDuration + duration, onComplete: onBlinkComplete } );
+			TweenLite.to( light, fadeDuration, { alpha: 0, ease: Back.easeOut, delay: fadeDuration + duration, overwrite: false, onComplete: onBlinkComplete } );
 		}
 		
 		private function onBlinkComplete():void {
-			trace( 'COMPLETE' );
 			lightState = NORMAL_STATE;
 		}
 		

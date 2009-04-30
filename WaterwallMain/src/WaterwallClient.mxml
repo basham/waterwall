@@ -77,7 +77,7 @@
 				board = new WWMessageBoard();
 				board.dynamicAnchor( buoy, buoyWidth * .5, - buoyWidth * .25 );
 				
-				water2.addFloatingItem( buoy );
+				water2.addIFloatable( buoy );
 				
 				addDisplayObject( sky );
 				addDisplayObject( board );
@@ -124,6 +124,15 @@
 				aa = Number( avgAmp.toFixed( 3 ) );
 				af = Number( avgFill.toFixed( 3 ) );
 				
+				var strongAmp:Number = 5;
+				
+				// Normalize 0 - strongAmp to maxBlink - minBlink
+				var maxBlink:Number = 4;
+				var minBlink:Number = .05;
+				var bPerc:Number = ( avgAmp > strongAmp ? strongAmp : avgAmp ) / strongAmp;
+				var b:Number = ( 1 - bPerc ) * ( maxBlink - minBlink ) + minBlink;
+				buoy.blinker( b, b, b * .1 );
+				
 				if ( board.isQueueEmpty() ) {
 	
 					if ( board.secondsSinceLastMessage() > 10 ) {
@@ -133,7 +142,7 @@
 							message( MessageTypes.FEW );
 					}
 					
-					if ( board.secondsSinceLastMessage() > 5 && avgAmp > 6 )
+					if ( board.secondsSinceLastMessage() > 5 && avgAmp > strongAmp )
 						message( MessageTypes.STRONG_AMPLITUDE );
 					
 					if ( board.secondsSinceLastMessage() > 25 )

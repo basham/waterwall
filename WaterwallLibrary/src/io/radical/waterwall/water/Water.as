@@ -1,6 +1,7 @@
 ﻿package io.radical.waterwall.water {
 	
 	import edu.iu.vis.utils.NumberUtil;
+	import edu.iu.vis.utils.TrigUtil;
 	
 	import flash.display.DisplayObject;
 	import flash.display.GradientType;
@@ -14,6 +15,7 @@
 	import flash.utils.*;
 	
 	import io.radical.waterwall.float.FloatingItem;
+	import io.radical.waterwall.float.FloatingSprite;
 	import io.radical.waterwall.float.IFloatable;
 	
 	public class Water extends Sprite {
@@ -247,6 +249,7 @@
 			
 			var gravity:Number = .25;
 			var friction:Number = .85
+			var k:Number = .3;
 			var margin:Number = 4; // # of dots to average
 			var x:Number = Math.round(this.width / 2);
 			var index:Number = Math.floor(x/spacing) - margin/2;
@@ -261,26 +264,29 @@
 			}
 			
 			y /= margin; // Average y water-level coordinate
+			ang /= margin;
+			ang = TrigUtil.Degrees( ang );
 			
 			for ( var j:uint = 0; j < floatingItems.length; ++j ) {
 				
-				var fi:FloatingItem = floatingItems[j];
+				var fi:IFloatable = floatingItems[j] as IFloatable;
 				var dob:DisplayObject = fi.displayObject;
 				
-				if ( dob.y >= y - dob.height * .85 ) {
+				if ( dob.y >= y - dob.height * fi.buoyancy ) {
 					fi.yVelocity -= gravity;
 					if ( fi.yVelocity > 0 )
 						fi.yVelocity *= friction;
-					var k:Number = .3;
-					dob.rotation += ((ang/margin)*180/Math.PI-dob.rotation)*k;
 				}
 				else {
 					fi.yVelocity += gravity;
 					if ( fi.yVelocity < 0 )
 						fi.yVelocity *= friction;
+					ang = 0;
 				}
 				
+				fi.yVelocity = Math.abs( fi.yVelocity ) < .2 ? 0 : fi.yVelocity;
 				dob.y += fi.yVelocity;
+				dob.rotation += ( ang - dob.rotation ) * k;
 			}
 		}
 		
