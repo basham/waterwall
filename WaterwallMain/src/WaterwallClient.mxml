@@ -140,6 +140,8 @@
 							message( MessageTypes.EMPTY );
 						else if ( avgFill < .06 && avgFill > 0 )
 							message( MessageTypes.FEW );
+						else if ( avgFill > .8 )
+							message( MessageTypes.HIGH );
 					}
 					
 					if ( board.secondsSinceLastMessage() > 5 && avgAmp > strongAmp )
