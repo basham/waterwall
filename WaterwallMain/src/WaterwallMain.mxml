@@ -23,7 +23,7 @@
 			
 			import flash.display.BlendMode;
 			
-			private const CAM_FPS:uint = 10;
+			private const CAM_FPS:uint = 5;
 			
 			[Bindable]
 			private var w:Number = 320;
@@ -151,6 +151,10 @@
 				tracker.motionTrack( camData );
 				var rag:RegionAdjacencyGraph = tracker.graph();
 				
+				var maxAmp:Number = 0;
+				var maxX:Number = 0;
+				var active:Boolean = false;
+				
 				for each( var r:Region in rag.regions ) {
 					if ( !r.bit ) {
 						
@@ -163,9 +167,17 @@
 						var ampHigh:Number = amplitudeRange[1];
 						var amplitude:Number = perc * ( ampHigh - ampLow ) + ampLow;
 						
-						client.dispatchEvent( new WaveEvent( amplitude, x ) );
+						if ( amplitude > maxAmp ) {
+							active = true;
+							maxAmp = amplitude;
+							maxX = x;
+						}
+						
 					}
 				}
+				
+				if ( active )
+					client.dispatchEvent( new WaveEvent( maxAmp, maxX ) );
 			}
 			
 			private function calculateFill():void {
