@@ -154,6 +154,8 @@
 				var maxAmp:Number = 0;
 				var maxX:Number = 0;
 				var active:Boolean = false;
+				var waves:Dictionary = new Dictionary( true );
+				var amps:Array = new Array();
 				
 				for each( var r:Region in rag.regions ) {
 					if ( !r.bit ) {
@@ -167,17 +169,44 @@
 						var ampHigh:Number = amplitudeRange[1];
 						var amplitude:Number = perc * ( ampHigh - ampLow ) + ampLow;
 						
-						if ( amplitude > maxAmp ) {
-							active = true;
-							maxAmp = amplitude;
-							maxX = x;
-						}
+						waves[ amplitude ] = x;
+						amps.push( amplitude );
+						
+						//if ( amplitude > maxAmp ) {
+						//	active = true;
+						//	maxAmp = amplitude;
+						//	maxX = x;
+						//}
 						
 					}
 				}
 				
-				if ( active )
-					client.dispatchEvent( new WaveEvent( maxAmp, maxX ) );
+				amps.sort( sortWaves, Array.NUMERIC );
+				
+				for ( var i:uint = 0; i < maxNumWaves.value && i < amps.length; i++ ) {
+					var amp:Number = amps[i];
+					
+					//trace( amp, waves[ amp ] );
+					client.dispatchEvent( new WaveEvent( amp, waves[ amp ] ) );
+					//client.dispatchEvent( new WaveEvent( maxAmp, maxX ) );
+				}
+					//trace( '---' );
+				//trace( amps );
+				//waves
+				//for ( var key:Number in waves ) {
+					
+				//}
+				
+				//if ( active )
+				//	client.dispatchEvent( new WaveEvent( maxAmp, maxX ) );
+			}
+			
+			private function sortWaves( a:Number, b:Number ):int {
+				if ( a > b )
+					return -1;
+				if ( a < b )
+					return 1;
+				return 0;
 			}
 			
 			private function calculateFill():void {
@@ -458,6 +487,10 @@
 				<mx:FormItem label="Amplitude" width="100%">
 					<mx:HSlider id="ampSlider" width="100%" minimum="0" maximum="30"
 						tickInterval="5" snapInterval="1" thumbCount="2" values="[3, 12]" labels="['0', '30']" />
+				</mx:FormItem>
+				
+				<mx:FormItem label="Max Number Waves" width="100%">
+					<mx:NumericStepper id="maxNumWaves" minimum="0" maximum="20" value="4" />
 				</mx:FormItem>
 				
 			</mx:VBox>
